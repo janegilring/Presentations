@@ -38,7 +38,7 @@ Invoke-Command -ComputerName FS2.azurelab.local -ScriptBlock {
 } -Credential $cred -Authentication Credssp
 
 
-New-SmbShare D:\DemoData -Name DemoData -FullAccess Everyone
+New-SmbShare D:\NICDemoData -Name DemoData -FullAccess Everyone
 New-DfsnFolder -Path "\\azurelab.local\Public\Data" -EnableTargetFailback $True -TargetPath \\BranchFS1.azurelab.local\DemoData
 New-DfsnFolderTarget -Path "\\azurelab.local\Public\Data" -TargetPath \\DemoCluster.azurelab.local\DemoData
 
