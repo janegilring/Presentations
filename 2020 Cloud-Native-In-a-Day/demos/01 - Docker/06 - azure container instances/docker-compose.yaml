@@ -1,0 +1,13 @@
+version: '3'
+services:
+  content-api:
+    image: janegilring.azurecr.io/fabrikam/content-api:latest
+    container_name: api
+    ports:
+        - "3001:3001"
+
+  content-web:
+    image: janegilring.azurecr.io/fabrikam/content-web:latest
+    container_name: web
+    ports:
+        - "3000:3000"
