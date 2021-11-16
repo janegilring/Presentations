@@ -1,0 +1,2473 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Cost Optimization Recommendations workbook\n\n![alt text](https://docs.microsoft.com/en-us/learn/modules/azure-well-architected-introduction/media/pillars.png \"Well-architected framework pillars\")\n\nFor more information visit [Microsoft Azure Well-Architected Framework](https://docs.microsoft.com/en-us/azure/architecture/framework/cost/overview)"
+      },
+      "name": "text - 2"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "cbde45d4-b53d-4a97-9491-6036d4498306",
+            "cellValue": "SelectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "General",
+            "subTarget": "General",
+            "preText": "General",
+            "style": "link"
+          },
+          {
+            "id": "92e6fab8-8e7a-4243-95df-52dc78fa2245",
+            "cellValue": "SelectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Networking",
+            "subTarget": "Networking",
+            "style": "link"
+          },
+          {
+            "id": "91f28c75-54d4-4ec5-b465-459a4b3291f4",
+            "cellValue": "SelectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Storage",
+            "subTarget": "Storage",
+            "style": "link"
+          },
+          {
+            "id": "48833962-df87-4160-b78b-cdd38d8e0edc",
+            "cellValue": "SelectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Virtual Machines",
+            "subTarget": "VirtualMachines",
+            "style": "link"
+          },
+          {
+            "id": "6a8f4a82-e39b-478b-a8e3-23ee197ba2e3",
+            "cellValue": "SelectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "WebApps",
+            "subTarget": "WebApps",
+            "style": "link"
+          },
+          {
+            "id": "3a5b8985-b759-40b3-af51-9b22db8aa531",
+            "cellValue": "SelectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "SQL ",
+            "subTarget": "SQL",
+            "style": "link"
+          },
+          {
+            "id": "35bc26c9-2820-480c-a56c-85e2414a725d",
+            "cellValue": "SelectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "LogAnalytics",
+            "subTarget": "LogAnalytics",
+            "style": "link"
+          },
+          {
+            "id": "aaf6a0ab-2d1a-4956-8422-371b44c5e85e",
+            "cellValue": "SelectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Cost Information",
+            "subTarget": "Cost",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 3"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "ada6cb55-3cd1-4d8a-b119-ffe6239c5b84",
+            "version": "KqlParameterItem/1.0",
+            "name": "Subscription",
+            "label": "Choose Subscription",
+            "type": 6,
+            "description": "Parameter used to scope the subscription",
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "value": [
+              "/subscriptions/4c2356d6-4809-4c69-adaf-e5d670aad86c"
+            ],
+            "typeSettings": {
+              "limitSelectTo": 8,
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "includeAll": true,
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isNotEqualTo",
+        "value": "Cost"
+      },
+      "name": "parameters - 1"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "parameters": [
+                {
+                  "id": "d7bdbcc1-f2d0-4b43-a2ab-771b5fad5eea",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "Subscription",
+                  "type": 6,
+                  "isRequired": true,
+                  "value": "/subscriptions/ebb79bc0-aa86-44a7-8111-cabbe0c43993",
+                  "typeSettings": {
+                    "additionalResourceOptions": [],
+                    "includeAll": true
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "label": "Choose Subscription"
+                }
+              ],
+              "style": "pills",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "conditionalVisibility": {
+              "parameterName": "SelectedTab",
+              "comparison": "isEqualTo",
+              "value": "Cost"
+            },
+            "name": "parameters - Subscription"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "# This Tab will show Information about idle resource that have impact on cost\r\n### Note: The cost information available  in this tab relates to the previous month.  If the resources were created less than 30 days ago, check the cost management and billing blade.\r\n### *Billing reader permission as a minimum is needed to populate cost information"
+            },
+            "name": "text - 7"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"ARMEndpoint/1.0\",\"data\":\"{\\r\\n    \\\"type\\\": \\\"Usage\\\",\\r\\n    \\\"timeframe\\\": \\\"TheLastMonth\\\",\\r\\n    \\\"dataset\\\": {\\r\\n      \\\"granularity\\\": \\\"None\\\",\\r\\n\\t  \\\"filter\\\":{\\r\\n\\t\\t  \\\"dimensions\\\" : {\\r\\n                      \\\"name\\\" : \\\"resourceType\\\",\\r\\n                      \\\"operator\\\" : \\\"In\\\",\\r\\n                      \\\"values\\\" : [\\r\\n                         \\\"microsoft.compute/disks\\\"\\r\\n                      ]\\r\\n                  }\\r\\n\\t  },\\r\\n      \\\"aggregation\\\": {\\r\\n       \\\"totalCost\\\": {\\r\\n          \\\"name\\\": \\\"PreTaxCost\\\",\\r\\n          \\\"function\\\": \\\"Sum\\\"\\r\\n        }\\r\\n      },\\r\\n     \\\"grouping\\\": [\\r\\n        {\\r\\n         \\\"type\\\": \\\"Dimension\\\",\\r\\n          \\\"name\\\": \\\"ResourceId\\\"\\r\\n        }\\r\\n      ]\\r\\n    }\\r\\n  }\",\"headers\":[],\"method\":\"POST\",\"path\":\"/subscriptions/{Subscription:id}/providers/Microsoft.CostManagement/query?\",\"urlParams\":[{\"key\":\"api-version\",\"value\":\"2019-11-01\"}],\"batchDisabled\":false,\"transformers\":[{\"type\":\"jsonpath\",\"settings\":{\"tablePath\":\"$.properties\",\"columns\":[]}}]}",
+              "size": 0,
+              "title": "Cost-GetAllDisks",
+              "showExportToExcel": true,
+              "queryType": 12
+            },
+            "conditionalVisibility": {
+              "parameterName": "Isvisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetAllDisks"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join (resources | where type =~ 'microsoft.compute/disks' and tostring (properties.diskState) == 'Unattached' and name !has '-ASRReplica' | extend DiskID=id, DiskName=name, SKUName=sku.name, SKUTier=sku.tier, DiskSizeGB=tostring(properties.diskSizeGB),DiskRG=resourceGroup, Location=location, TimeCreated=tostring(properties.timeCreated))on subscriptionId \r\n        | order by id asc \r\n        | project DiskID,DiskName, DiskSizeGB, SKUName, SKUTier, DiskRG, Location, TimeCreated, SubscriptionName",
+              "size": 0,
+              "title": "Unattached Disks",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "IsVisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetUnattachedDisks"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\",\"mergeType\":\"innerunique\",\"leftTable\":\"query - GetAllDisks\",\"rightTable\":\"query - GetUnattachedDisks\",\"leftColumn\":\"ResourceId\",\"rightColumn\":\"DiskID\"}],\"projectRename\":[{\"originalName\":\"[query - GetUnattachedDisks].DiskID\",\"mergedName\":\"DiskID\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllDisks].PreTaxCost\",\"mergedName\":\"Last Month Cost\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllDisks].Currency\",\"mergedName\":\"Currency\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedDisks].DiskSizeGB\",\"mergedName\":\"DiskSizeGB\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedDisks].SKUName\",\"mergedName\":\"SKUName\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedDisks].SKUTier\",\"mergedName\":\"SKUTier\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedDisks].DiskRG\",\"mergedName\":\"DiskRG\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedDisks].Location\",\"mergedName\":\"Location\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedDisks].TimeCreated\",\"mergedName\":\"TimeCreated\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedDisks].SubscriptionName\",\"mergedName\":\"SubscriptionName\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllDisks].ResourceId\"},{\"originalName\":\"[query - GetUnattachedDisks].DiskName\"}]}",
+              "size": 0,
+              "title": "Unattached Managed Disks cost",
+              "showExportToExcel": true,
+              "queryType": 7,
+              "sortBy": []
+            },
+            "showPin": false,
+            "name": "query - Unattaached Disks Cost"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"ARMEndpoint/1.0\",\"data\":\"{\\r\\n    \\\"type\\\": \\\"Usage\\\",\\r\\n    \\\"timeframe\\\": \\\"TheLastMonth\\\",\\r\\n    \\\"dataset\\\": {\\r\\n      \\\"granularity\\\": \\\"None\\\",\\r\\n\\t  \\\"filter\\\":{\\r\\n\\t\\t  \\\"dimensions\\\" : {\\r\\n                      \\\"name\\\" : \\\"resourceType\\\",\\r\\n                      \\\"operator\\\" : \\\"In\\\",\\r\\n                      \\\"values\\\" : [\\r\\n                         \\\"microsoft.network/loadbalancers\\\"\\r\\n                      ]\\r\\n                  }\\r\\n\\t  },\\r\\n      \\\"aggregation\\\": {\\r\\n       \\\"totalCost\\\": {\\r\\n          \\\"name\\\": \\\"PreTaxCost\\\",\\r\\n          \\\"function\\\": \\\"Sum\\\"\\r\\n        }\\r\\n      },\\r\\n     \\\"grouping\\\": [\\r\\n        {\\r\\n         \\\"type\\\": \\\"Dimension\\\",\\r\\n          \\\"name\\\": \\\"ResourceId\\\"\\r\\n        }\\r\\n      ]\\r\\n    }\\r\\n  }\",\"headers\":[],\"method\":\"POST\",\"path\":\"/subscriptions/{Subscription:id}/providers/Microsoft.CostManagement/query?\",\"urlParams\":[{\"key\":\"api-version\",\"value\":\"2019-11-01\"}],\"batchDisabled\":false,\"transformers\":[{\"type\":\"jsonpath\",\"settings\":{\"tablePath\":\"$.properties\",\"columns\":[]}}]}",
+              "size": 0,
+              "title": "Cost-GetAllLoadBalancers",
+              "showExportToExcel": true,
+              "queryType": 12
+            },
+            "conditionalVisibility": {
+              "parameterName": "Isvisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetAllLoadBalancers"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( resources | where type =~ 'microsoft.network/loadbalancers' and tostring(properties.backendAddressPools) == '[]' | extend LoadBalancerID=id, LoadBalancerName=name, SKU=sku, LBLocation=location) on subscriptionId\r\n    | order by id asc\r\n    | project LoadBalancerID,LoadBalancerName, SKU.name,SKU.tier, LBLocation, SubscriptionName",
+              "size": 0,
+              "title": "Unattached Load Balancers",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "IsVisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetUnattachedLoadBalancers"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\",\"mergeType\":\"innerunique\",\"leftTable\":\"query - GetAllLoadBalancers\",\"rightTable\":\"query - GetUnattachedLoadBalancers\",\"leftColumn\":\"ResourceId\",\"rightColumn\":\"LoadBalancerID\"}],\"projectRename\":[{\"originalName\":\"[query - GetUnattachedLoadBalancers].LoadBalancerID\",\"mergedName\":\"LoadBalancerID\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllLoadBalancers].PreTaxCost\",\"mergedName\":\"Last Month Cost\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllLoadBalancers].Currency\",\"mergedName\":\"Currency\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedLoadBalancers].SKU_name\",\"mergedName\":\"SKU_name\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedLoadBalancers].SKU_tier\",\"mergedName\":\"SKU_tier\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedLoadBalancers].LBLocation\",\"mergedName\":\"LBLocation\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedLoadBalancers].SubscriptionName\",\"mergedName\":\"SubscriptionName\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllDisks].ResourceId\"},{\"originalName\":\"[query - GetAllLoadBalancers].ResourceId\"},{\"originalName\":\"[query - GetUnattachedLoadBalancers].LoadBalancerName\"}]}",
+              "size": 0,
+              "title": "Unattached Load balancers Cost",
+              "showExportToExcel": true,
+              "queryType": 7
+            },
+            "showPin": false,
+            "name": "query - Unattaached Load balancers Cost"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"ARMEndpoint/1.0\",\"data\":\"{\\r\\n    \\\"type\\\": \\\"Usage\\\",\\r\\n    \\\"timeframe\\\": \\\"TheLastMonth\\\",\\r\\n    \\\"dataset\\\": {\\r\\n      \\\"granularity\\\": \\\"None\\\",\\r\\n\\t  \\\"filter\\\":{\\r\\n\\t\\t  \\\"dimensions\\\" : {\\r\\n                      \\\"name\\\" : \\\"resourceType\\\",\\r\\n                      \\\"operator\\\" : \\\"In\\\",\\r\\n                      \\\"values\\\" : [\\r\\n                         \\\"microsoft.network/applicationgateways\\\"\\r\\n                      ]\\r\\n                  }\\r\\n\\t  },\\r\\n      \\\"aggregation\\\": {\\r\\n       \\\"totalCost\\\": {\\r\\n          \\\"name\\\": \\\"PreTaxCost\\\",\\r\\n          \\\"function\\\": \\\"Sum\\\"\\r\\n        }\\r\\n      },\\r\\n     \\\"grouping\\\": [\\r\\n        {\\r\\n         \\\"type\\\": \\\"Dimension\\\",\\r\\n          \\\"name\\\": \\\"ResourceId\\\"\\r\\n        }\\r\\n      ]\\r\\n    }\\r\\n  }\",\"headers\":[],\"method\":\"POST\",\"path\":\"/subscriptions/{Subscription:id}/providers/Microsoft.CostManagement/query?\",\"urlParams\":[{\"key\":\"api-version\",\"value\":\"2019-11-01\"}],\"batchDisabled\":false,\"transformers\":[{\"type\":\"jsonpath\",\"settings\":{\"tablePath\":\"$.properties\",\"columns\":[]}}]}",
+              "size": 0,
+              "title": "Cost-GetAllApplicationGWs",
+              "showExportToExcel": true,
+              "queryType": 12
+            },
+            "conditionalVisibility": {
+              "parameterName": "Isvisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetAllApplicationGWs"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources | where type =~ 'Microsoft.Network/applicationGateways'\r\n| extend AppGateway=id, AppGWName=name, SKUName= tostring(properties.sku.name), SKUTier= tostring(properties.sku.tier), APPRG=resourceGroup, APPGWLocation=location ,backendpools = properties.backendAddressPools\r\n| mv-expand backendpools\r\n| extend backendPoolName = backendpools.name ,backendPoolIPTarget = array_length(backendpools.properties.backendAddresses) , backendPoolVMTarget = array_length(backendpools.properties.backendIPConfigurations)\r\n| where isnull(backendPoolVMTarget) and backendPoolIPTarget == '0'\r\n| project AppGateway,AppGWName,backendPoolName,backendPoolIPTarget,backendPoolVMTarget\r\n| order by AppGWName",
+              "size": 0,
+              "title": "Unattached Application Gateways",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "IsVisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetUnattachedApplicationGWs"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\",\"mergeType\":\"innerunique\",\"leftTable\":\"query - GetAllApplicationGWs\",\"rightTable\":\"query - GetUnattachedApplicationGWs\",\"leftColumn\":\"ResourceId\",\"rightColumn\":\"AppGateway\"}],\"projectRename\":[{\"originalName\":\"[query - GetUnattachedApplicationGWs].AppGateway\",\"mergedName\":\"AppGateway\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllApplicationGWs].PreTaxCost\",\"mergedName\":\"Last Month Cost\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllApplicationGWs].Currency\",\"mergedName\":\"Currency\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedApplicationGWs].backendPoolName\",\"mergedName\":\"backendPoolName\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedApplicationGWs].backendPoolIPTarget\",\"mergedName\":\"backendPoolIPTarget\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedApplicationGWs].backendPoolVMTarget\",\"mergedName\":\"backendPoolVMTarget\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedApplicationGWs].AppGWName\",\"mergedName\":\"AppGWName\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllApplicationGWs].ResourceId\"}]}",
+              "size": 0,
+              "title": "Idle Application Gateways Cost",
+              "showExportToExcel": true,
+              "queryType": 7,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "backendPoolIPTarget",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "0",
+                          "representation": "disabled",
+                          "text": ""
+                        },
+                        {
+                          "operator": ">",
+                          "thresholdValue": "0",
+                          "representation": "success",
+                          "text": ""
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "columnMatch": "backendPoolVMTarget",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "is Empty",
+                          "representation": "disabled",
+                          "text": ""
+                        },
+                        {
+                          "operator": ">",
+                          "thresholdValue": "0",
+                          "representation": "success",
+                          "text": ""
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": ""
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "hierarchySettings": {
+                  "treeType": 1,
+                  "groupBy": [
+                    "AppGWName"
+                  ],
+                  "expandTopLevel": true
+                }
+              }
+            },
+            "conditionalVisibility": {
+              "parameterName": "isVisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "showPin": false,
+            "name": "query - Unattached ApplicationGWs Cost"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"ARMEndpoint/1.0\",\"data\":\"{\\r\\n    \\\"type\\\": \\\"Usage\\\",\\r\\n    \\\"timeframe\\\": \\\"TheLastMonth\\\",\\r\\n    \\\"dataset\\\": {\\r\\n      \\\"granularity\\\": \\\"None\\\",\\r\\n\\t  \\\"filter\\\":{\\r\\n\\t\\t  \\\"dimensions\\\" : {\\r\\n                      \\\"name\\\" : \\\"resourceType\\\",\\r\\n                      \\\"operator\\\" : \\\"In\\\",\\r\\n                      \\\"values\\\" : [\\r\\n                         \\\"Microsoft.Network/publicIPAddresses\\\"\\r\\n                      ]\\r\\n                  }\\r\\n\\t  },\\r\\n      \\\"aggregation\\\": {\\r\\n       \\\"totalCost\\\": {\\r\\n          \\\"name\\\": \\\"PreTaxCost\\\",\\r\\n          \\\"function\\\": \\\"Sum\\\"\\r\\n        }\\r\\n      },\\r\\n     \\\"grouping\\\": [\\r\\n        {\\r\\n         \\\"type\\\": \\\"Dimension\\\",\\r\\n          \\\"name\\\": \\\"ResourceId\\\"\\r\\n        }\\r\\n      ]\\r\\n    }\\r\\n  }\",\"headers\":[],\"method\":\"POST\",\"path\":\"/subscriptions/{Subscription:id}/providers/Microsoft.CostManagement/query?\",\"urlParams\":[{\"key\":\"api-version\",\"value\":\"2019-11-01\"}],\"batchDisabled\":false,\"transformers\":[{\"type\":\"jsonpath\",\"settings\":{\"tablePath\":\"$.properties\",\"columns\":[]}}]}",
+              "size": 0,
+              "title": "Cost-GetAllPublicIPAddresses",
+              "showExportToExcel": true,
+              "queryType": 12
+            },
+            "conditionalVisibility": {
+              "parameterName": "Isvisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetAllPublicIPAddresses"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join (resources | where type =~ 'Microsoft.Network/publicIPAddresses' and isempty(properties.ipConfiguration) | extend ipdetails=id, IPName=name, AllocationMethod=tostring(properties.publicIPAllocationMethod), SKUName=sku.name, PIPRG=resourceGroup, Location=location)on subscriptionId \r\n        | order by ipdetails asc \r\n        | project ipdetails,IPName, SKUName, PIPRG, Location, AllocationMethod, SubscriptionName",
+              "size": 0,
+              "title": "Unattached Public IP Addresses",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "IsVisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetUnattachedPublicIPAddresses"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\",\"mergeType\":\"innerunique\",\"leftTable\":\"query - GetAllPublicIPAddresses\",\"rightTable\":\"query - GetUnattachedPublicIPAddresses\",\"leftColumn\":\"ResourceId\",\"rightColumn\":\"ipdetails\"}],\"projectRename\":[{\"originalName\":\"[query - GetUnattachedPublicIPAddresses].ipdetails\",\"mergedName\":\"ipdetails\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllPublicIPAddresses].PreTaxCost\",\"mergedName\":\"Last Month Cost\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllPublicIPAddresses].Currency\",\"mergedName\":\"Currency\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedPublicIPAddresses].SKUName\",\"mergedName\":\"SKUName\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedPublicIPAddresses].PIPRG\",\"mergedName\":\"PIPRG\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedPublicIPAddresses].Location\",\"mergedName\":\"Location\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedPublicIPAddresses].AllocationMethod\",\"mergedName\":\"AllocationMethod\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetUnattachedPublicIPAddresses].SubscriptionName\",\"mergedName\":\"SubscriptionName\",\"fromId\":\"91082ef6-2c5a-4fb5-9bed-d7950929305e\"},{\"originalName\":\"[query - GetAllDisks].ResourceId\"},{\"originalName\":\"[query - GetAllLoadBalancers].ResourceId\"},{\"originalName\":\"[query - GetAllPublicIPAddresses].ResourceId\"},{\"originalName\":\"[query - GetUnattachedPublicIPAddresses].IPName\"}]}",
+              "size": 0,
+              "title": "Unattached Public IP addresses Cost",
+              "showExportToExcel": true,
+              "queryType": 7
+            },
+            "showPin": false,
+            "name": "query - Unattached Public IP addresses Cost"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"ARMEndpoint/1.0\",\"data\":\"{\\r\\n    \\\"type\\\": \\\"Usage\\\",\\r\\n    \\\"timeframe\\\": \\\"TheLastMonth\\\",\\r\\n    \\\"dataset\\\": {\\r\\n      \\\"granularity\\\": \\\"None\\\",\\r\\n\\t  \\\"filter\\\":{\\r\\n\\t\\t  \\\"dimensions\\\" : {\\r\\n                      \\\"name\\\" : \\\"resourceType\\\",\\r\\n                      \\\"operator\\\" : \\\"In\\\",\\r\\n                      \\\"values\\\" : [\\r\\n                         \\\"Microsoft.Compute/VirtualMachines\\\"\\r\\n                      ]\\r\\n                  }\\r\\n\\t  },\\r\\n      \\\"aggregation\\\": {\\r\\n       \\\"totalCost\\\": {\\r\\n          \\\"name\\\": \\\"PreTaxCost\\\",\\r\\n          \\\"function\\\": \\\"Sum\\\"\\r\\n        }\\r\\n      },\\r\\n     \\\"grouping\\\": [\\r\\n        {\\r\\n         \\\"type\\\": \\\"Dimension\\\",\\r\\n          \\\"name\\\": \\\"ResourceId\\\"\\r\\n        }\\r\\n      ]\\r\\n    }\\r\\n  }\",\"headers\":[],\"method\":\"POST\",\"path\":\"/subscriptions/{Subscription:id}/providers/Microsoft.CostManagement/query?\",\"urlParams\":[{\"key\":\"api-version\",\"value\":\"2019-11-01\"}],\"batchDisabled\":false,\"transformers\":[{\"type\":\"jsonpath\",\"settings\":{\"tablePath\":\"$.properties\",\"columns\":[]}}]}",
+              "size": 0,
+              "title": "Cost-GetAllVMs",
+              "showExportToExcel": true,
+              "queryType": 12
+            },
+            "conditionalVisibility": {
+              "parameterName": "Isvisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetAllVMs"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"ARMEndpoint/1.0\",\"data\":null,\"headers\":[],\"method\":\"GET\",\"path\":\"/subscriptions/{Subscription:id}/providers/Microsoft.Compute/skus?$filter=location eq 'westus'\",\"urlParams\":[{\"key\":\"api-version\",\"value\":\"2019-04-01\"}],\"batchDisabled\":false,\"transformers\":[{\"type\":\"jsonpath\",\"settings\":{\"tablePath\":\"$.*[?(@.resourceType=='virtualMachines')]\",\"columns\":[{\"path\":\"name\",\"columnid\":\"Name\"},{\"path\":\"capabilities[?(@.name=='vCPUs')].value\",\"columnid\":\"vCPUs\"}]}}]}",
+              "size": 0,
+              "title": "Get VM vCPU",
+              "showExportToExcel": true,
+              "queryType": 12
+            },
+            "conditionalVisibility": {
+              "parameterName": "isVisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - Get VM vCPU"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( resources | where type =~ 'microsoft.compute/virtualmachines' and  tostring(properties.storageProfile.osDisk.osType) == 'Windows' and tostring(properties.['licenseType']) !has 'Windows' | extend WindowsId=id, VMName=name, VMLocation=location, VMRG=resourceGroup, OSType=tostring(properties.storageProfile.imageReference.offer), OsVersion = tostring(properties.storageProfile.imageReference.sku), VMSize=tostring (properties.hardwareProfile.vmSize), LicenseType = tostring(properties.['licenseType'])) on subscriptionId \r\n    | order by VMSize asc \r\n    | project WindowsId,VMName,VMRG,VMSize, VMLocation,OSType, OsVersion,LicenseType, SubscriptionName",
+              "size": 0,
+              "title": "Windows VMs without Azure Hybrid Benefit",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "IsVisible",
+              "comparison": "isEqualTo",
+              "value": "true"
+            },
+            "name": "query - GetWindowsVMs-AHUB"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\",\"mergeType\":\"innerunique\",\"leftTable\":\"query - GetAllVMs\",\"rightTable\":\"query - GetWindowsVMs-AHUB\",\"leftColumn\":\"ResourceId\",\"rightColumn\":\"WindowsId\"},{\"id\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30f2\",\"mergeType\":\"leftouter\",\"leftTable\":\"query - GetWindowsVMs-AHUB\",\"rightTable\":\"query - Get VM vCPU\",\"leftColumn\":\"VMSize\",\"rightColumn\":\"Name\"}],\"projectRename\":[{\"originalName\":\"[query - GetWindowsVMs-AHUB].WindowsId\",\"mergedName\":\"WindowsId\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetAllVMs].PreTaxCost\",\"mergedName\":\"Last Month Cost\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[Added column]\",\"mergedName\":\"Approximate AHUB savings\",\"fromId\":null,\"isNewItem\":true,\"newItemData\":[{\"criteriaContext\":{\"leftOperand\":\"Last Month Cost\",\"operator\":\"isNotNull\",\"rightValType\":\"column\",\"resultValType\":\"expression\",\"resultVal\":\"[\\\"Last Month Cost\\\"] * 0.4402\"}},{\"criteriaContext\":{\"operator\":\"Default\",\"rightValType\":\"column\",\"resultValType\":\"column\"}}]},{\"originalName\":\"[query - GetAllVMs].Currency\",\"mergedName\":\"Currency\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetWindowsVMs-AHUB].VMName\",\"mergedName\":\"VMName\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetWindowsVMs-AHUB].VMRG\",\"mergedName\":\"VMRG\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetWindowsVMs-AHUB].VMSize\",\"mergedName\":\"VMSize\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - Get VM vCPU].vCPUs\",\"mergedName\":\"vCPUs\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30f2\"},{\"originalName\":\"[query - GetWindowsVMs-AHUB].VMLocation\",\"mergedName\":\"VMLocation\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetWindowsVMs-AHUB].OSType\",\"mergedName\":\"OSType\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetWindowsVMs-AHUB].OsVersion\",\"mergedName\":\"OsVersion\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetWindowsVMs-AHUB].LicenseType\",\"mergedName\":\"LicenseType\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetWindowsVMs-AHUB].SubscriptionName\",\"mergedName\":\"SubscriptionName\",\"fromId\":\"1eab4939-70bc-4c8c-afd5-290b2bfb30ee\"},{\"originalName\":\"[query - GetAllVMs].ResourceId\"},{\"originalName\":\"[query - All VMs without AHUB + vCPU].Name\"},{\"originalName\":\"[query - Get VM vCPU].Name\"}]}",
+              "size": 0,
+              "title": "Windows VMs without Hybrid Benefit enabled",
+              "showExportToExcel": true,
+              "queryType": 7,
+              "sortBy": []
+            },
+            "showPin": false,
+            "name": "query - GetWindowsVM-AHUBCost"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isEqualTo",
+        "value": "Cost"
+      },
+      "name": "group - Cost Information"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Resources distribution per region"
+            },
+            "name": "text - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "summarize count() by location",
+              "size": 2,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "map",
+              "mapSettings": {
+                "locInfo": "AzureLoc",
+                "locInfoColumn": "location",
+                "sizeSettings": "count_",
+                "sizeAggregation": "Sum",
+                "labelSettings": "location",
+                "legendMetric": "count_",
+                "legendAggregation": "Sum",
+                "itemColorSettings": {
+                  "nodeColorField": "count_",
+                  "colorAggregation": "Sum",
+                  "type": "heatmap",
+                  "heatmapPalette": "greenRed"
+                }
+              }
+            },
+            "name": "query - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers  | where type =~ 'Microsoft.Resources/subscriptions' | project SubscriptionName = name, subscriptionId | join (Resources| summarize resourceCount=count() by subscriptionId) on subscriptionId\r\n",
+              "size": 0,
+              "title": "Resources per Subscription",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "tiles",
+              "tileSettings": {
+                "showBorder": false,
+                "titleContent": {
+                  "columnMatch": "SubscriptionName",
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "resourceCount",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              }
+            },
+            "customWidth": "33",
+            "name": "query - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "Resources | where type =~ 'Microsoft.Compute/virtualMachines' | project SKU = tostring(properties.hardwareProfile.vmSize)| summarize count() by SKU",
+              "size": 0,
+              "title": "Virtual machines per SKU",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "piechart",
+              "tileSettings": {
+                "showBorder": false,
+                "titleContent": {
+                  "columnMatch": "SKU",
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "count_",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              }
+            },
+            "customWidth": "66",
+            "name": "query - 2"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Tagged vs Untagged Resource Groups\r\n\r\nTags are a crucial part of organizing your Azure resources into a taxonomy. When following best practices for tag management, tags can be the basis for applying your business policies with Azure Policy or tracking costs with Cost Management. No matter how or why you use tags, it's important that you can quickly add, change, and remove those tags on your Azure resources. To see if your Azure resource supports tagging, see [Tag support](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/tag-support).\r\n\r\nConsider using Azure Policy to place mandatory Tag rules such as Enforce Tags on Resource Groups and inheterance on the Resources.\r\n\r\nhttps://docs.microsoft.com/en-us/azure/azure-resource-manager/management/tag-policies\r\n"
+            },
+            "name": "text - 5"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers\r\n| where type =~ 'microsoft.resources/subscriptions/resourcegroups'\r\n| extend TagBool = iff(tags != '' and tags != '[]', \"Tagged\",\"Untagged\")\r\n| summarize count() by TagBool\r\n//| project resourceGroup, tags\r\n",
+              "size": 0,
+              "title": "Tagged Resource Groups",
+              "exportFieldName": "resourceGroupTag",
+              "exportParameterName": "resourceGroupTag",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "50",
+            "name": "query - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "Resources | extend TagBool = iff(tags != '' and tags != '[]', \"Tagged\",\"Untagged\") | summarize count() by TagBool\r\n\r\n",
+              "size": 0,
+              "title": "Untagged Resource Count",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "50",
+            "name": "query - 7"
+          },
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "parameters": [
+                {
+                  "id": "30ab4c42-0169-445b-b482-dc4d50e82dca",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "ShowTaggedRG",
+                  "type": 2,
+                  "description": "Show RG with Tags",
+                  "isRequired": true,
+                  "value": "Yes",
+                  "typeSettings": {
+                    "additionalResourceOptions": []
+                  },
+                  "jsonData": "[\"Yes\", \"No\"]",
+                  "timeContext": {
+                    "durationMs": 86400000
+                  }
+                },
+                {
+                  "version": "KqlParameterItem/1.0",
+                  "name": "ShowUntaggedRG",
+                  "type": 2,
+                  "description": "Show RG with Tags",
+                  "isRequired": true,
+                  "value": "Yes",
+                  "typeSettings": {
+                    "additionalResourceOptions": [],
+                    "showDefault": false
+                  },
+                  "jsonData": "[\"Yes\", \"No\"]",
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "id": "579f68ee-5a65-4b2a-9fda-0c567e194fe0"
+                }
+              ],
+              "style": "pills",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "parameters - 9"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers\r\n| where type =~ 'Microsoft.Resources/subscriptions' \r\n| extend SubscriptionName=name \r\n| join  ( ResourceContainers | where type =~ 'microsoft.resources/subscriptions/resourcegroups'  | where tags !~ '' and tags != '{}'\r\n| extend resourceGroupName=id, RGLocation=location, RGTags=tags) on subscriptionId\r\n| project resourceGroupName, RGTags, RGLocation, SubscriptionName\r\n",
+              "size": 0,
+              "title": "Tagged Resource Groups",
+              "noDataMessageStyle": 3,
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "customWidth": "50",
+            "conditionalVisibility": {
+              "parameterName": "ShowTaggedRG",
+              "comparison": "isEqualTo",
+              "value": "Yes"
+            },
+            "name": "query - 10"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers\r\n| where type =~ 'Microsoft.Resources/subscriptions' \r\n| extend SubscriptionName=name \r\n| join  ( ResourceContainers | where type =~ 'microsoft.resources/subscriptions/resourcegroups' | where tags =~ '' or tags =~ '{}'\r\n| extend resourceGroupName=id, RGLocation=location) on subscriptionId\r\n| project resourceGroupName, RGLocation, SubscriptionName\r\n",
+              "size": 0,
+              "title": "Untagged Resource Groups",
+              "noDataMessageStyle": 3,
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "customWidth": "50",
+            "conditionalVisibility": {
+              "parameterName": "ShowUntaggedRG",
+              "comparison": "isEqualTo",
+              "value": "Yes"
+            },
+            "name": "query - 10 - Copy"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isEqualTo",
+        "value": "General"
+      },
+      "name": "Group General"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendations for Application Gateways\r\nReview Application Gateways which include backend pools with no targets. Resources listed with 2 red signs are considered idle. \r\n",
+              "style": "success"
+            },
+            "name": "text - 2"
+          },
+          {
+            "type": 12,
+            "content": {
+              "version": "NotebookGroup/1.0",
+              "groupType": "editable",
+              "items": [
+                {
+                  "type": 3,
+                  "content": {
+                    "version": "KqlItem/1.0",
+                    "query": "resources | where type =~ 'Microsoft.Network/applicationGateways'\r\n| extend AppGateway=id, AppGWName=name, SKUName= tostring(properties.sku.name), SKUTier= tostring(properties.sku.tier), APPRG=resourceGroup, APPGWLocation=location ,backendpools = properties.backendAddressPools\r\n| mv-expand backendpools\r\n| extend backendPoolName = backendpools.name ,backendPoolIPTarget = array_length(backendpools.properties.backendAddresses) , backendPoolVMTarget = array_length(backendpools.properties.backendIPConfigurations)\r\n| project AppGateway,AppGWName,backendPoolName,backendPoolIPTarget,backendPoolVMTarget\r\n| order by AppGWName",
+                    "size": 0,
+                    "title": "Application gateways with empty backend pool",
+                    "noDataMessage": "No Application gateways with empty backend pool found",
+                    "showExportToExcel": true,
+                    "queryType": 1,
+                    "resourceType": "microsoft.resourcegraph/resources",
+                    "crossComponentResources": [
+                      "{Subscription}"
+                    ],
+                    "visualization": "table",
+                    "gridSettings": {
+                      "formatters": [
+                        {
+                          "columnMatch": "backendPoolIPTarget",
+                          "formatter": 18,
+                          "formatOptions": {
+                            "thresholdsOptions": "icons",
+                            "thresholdsGrid": [
+                              {
+                                "operator": ">",
+                                "thresholdValue": "0",
+                                "representation": "success",
+                                "text": ""
+                              },
+                              {
+                                "operator": "==",
+                                "thresholdValue": "0",
+                                "representation": "disabled",
+                                "text": ""
+                              },
+                              {
+                                "operator": "Default",
+                                "thresholdValue": null,
+                                "representation": "success",
+                                "text": "{0}{1}"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "columnMatch": "backendPoolVMTarget",
+                          "formatter": 18,
+                          "formatOptions": {
+                            "thresholdsOptions": "icons",
+                            "thresholdsGrid": [
+                              {
+                                "operator": "is Empty",
+                                "representation": "disabled",
+                                "text": ""
+                              },
+                              {
+                                "operator": ">",
+                                "thresholdValue": "0",
+                                "representation": "success",
+                                "text": ""
+                              },
+                              {
+                                "operator": "Default",
+                                "thresholdValue": null,
+                                "representation": "success",
+                                "text": ""
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "filter": true,
+                      "hierarchySettings": {
+                        "treeType": 1,
+                        "groupBy": [
+                          "AppGWName"
+                        ],
+                        "expandTopLevel": true
+                      }
+                    }
+                  },
+                  "conditionalVisibility": {
+                    "parameterName": "SelectedTab",
+                    "comparison": "isEqualTo",
+                    "value": "Networking"
+                  },
+                  "name": "query - 4"
+                }
+              ]
+            },
+            "name": "Group Networking"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendations for Load Balancers\r\nReview Load balancers with no backend pools, and remove them if not needed.",
+              "style": "success"
+            },
+            "name": "text - 5"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( resources | where type =~ 'microsoft.network/loadbalancers' and tostring(properties.backendAddressPools) == '[]' | extend Details=id, LoadBalancerName=name, SKU=sku, LBLocation=location) on subscriptionId\r\n    | order by id asc\r\n    | project Details,LoadBalancerName, SKU.name,SKU.tier, LBLocation, SubscriptionName",
+              "size": 0,
+              "title": "Load Balancers",
+              "noDataMessage": "No Load balancers with empty backend pools found",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "gridSettings": {
+                "filter": true
+              }
+            },
+            "name": "query - 1"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendations for Public IP Addresses\r\nReview unattached Public IP addresses, as they may represent aditional cost.\r\n",
+              "style": "success"
+            },
+            "name": "text - 5"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join (resources | where type =~ 'Microsoft.Network/publicIPAddresses' and isempty(properties.ipConfiguration) | extend ipdetails=id, IPName=name, AllocationMethod=tostring(properties.publicIPAllocationMethod), SKUName=sku.name, PIPRG=resourceGroup, Location=location)on subscriptionId \r\n        | order by ipdetails asc \r\n        | project ipdetails,IPName, SKUName, PIPRG, Location, AllocationMethod, SubscriptionName",
+              "size": 0,
+              "title": "Unattached Public IPs",
+              "noDataMessage": "No unattached Public IPs found",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table"
+            },
+            "name": "query - 4"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendations for Availability Sets\r\nReview any existing empty Availability Sets, as they represent waste. Keep your Environment Clean!\r\n",
+              "style": "success"
+            },
+            "name": "Recommendations AS"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( resources | where type =~ 'Microsoft.Compute/availabilitySets' and tostring(properties.virtualMachines)=='[]' | extend availabilityset=id, ASName=name, ASRG=resourceGroup, ASLocation=location, FaultDomainCount=tostring(properties.platformFaultDomainCount), UpdateDomainCount= tostring(properties.platformUpdateDomainCount)) on subscriptionId\r\n    | order by id asc\r\n    | project availabilityset,ASName, ASRG, ASLocation, FaultDomainCount, UpdateDomainCount, SubscriptionName",
+              "size": 0,
+              "title": "Empty Availability sets",
+              "noDataMessage": "No Empty Availability sets found",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table"
+            },
+            "name": "query - 7"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendations for unattached Network Security Groups\r\nReview any existing unattached/empty NSGs, which represent waste. Keep your Environment Clean!\r\n",
+              "style": "success"
+            },
+            "name": "Recommendation NSGs"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( Resources | where type =~ 'microsoft.network/networksecuritygroups' and isnull(properties.networkInterfaces) and isnull(properties.subnets) | extend NSG=id, NSGName=name, NSGRG=resourceGroup, NSGLocation=location ) on subscriptionId\r\n    | order by id asc\r\n    | project NSG,NSGName, NSGRG, NSGLocation, SubscriptionName",
+              "size": 0,
+              "title": "Idle Network security groups",
+              "noDataMessage": "No idle Network security groups found",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table"
+            },
+            "name": "query - 9"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendations for unattached NICs\r\nReview any unattached NICs, which represent waste. Keep your Environment Clean!\r\n\r\n",
+              "style": "success"
+            },
+            "name": "Orphan NICs"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers  | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( Resources | where type =~ 'microsoft.network/networkinterfaces' and isempty(properties.virtualMachine) and isnull(properties.privateEndpoint)\r\n    | extend NIC=id,  NICName=name, NICRG=resourceGroup, NICLocation=location, NICType=tostring(properties.nicType)) on subscriptionId\r\n        | order by id asc\r\n        | project NIC,NICName, NICRG, NICLocation, NICType, SubscriptionName",
+              "size": 0,
+              "title": "Unattached NICs",
+              "noDataMessage": "No unattached NICs found",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table"
+            },
+            "name": "query - 11"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendations for VPN Gateways\r\nReview VPN Gateways without network traffic. These gateways are billed hourly, consider reconfiguring or deleting them if they are not in use.\r\n",
+              "style": "success"
+            },
+            "name": "text - 13"
+          },
+          {
+            "type": 12,
+            "content": {
+              "version": "NotebookGroup/1.0",
+              "groupType": "editable",
+              "title": "VPN - Network Gateway",
+              "items": [
+                {
+                  "type": 9,
+                  "content": {
+                    "version": "KqlParameterItem/1.0",
+                    "crossComponentResources": [
+                      "{Subscription}"
+                    ],
+                    "parameters": [
+                      {
+                        "id": "98bb692a-7ff4-42bc-926c-7e6d3b7cdd1b",
+                        "version": "KqlParameterItem/1.0",
+                        "name": "VPNNetGateway",
+                        "label": "VPN Network Gateway",
+                        "type": 5,
+                        "description": "See network traffic per VPN gateway",
+                        "multiSelect": true,
+                        "quote": "'",
+                        "delimiter": ",",
+                        "query": "Resources | where type =~ \"microsoft.network/virtualnetworkgateways\"",
+                        "crossComponentResources": [
+                          "{Subscription}"
+                        ],
+                        "typeSettings": {
+                          "additionalResourceOptions": []
+                        },
+                        "timeContext": {
+                          "durationMs": 86400000
+                        },
+                        "queryType": 1,
+                        "resourceType": "microsoft.resourcegraph/resources"
+                      },
+                      {
+                        "id": "b5a4fdd8-8ebb-489e-8d30-a787947f1838",
+                        "version": "KqlParameterItem/1.0",
+                        "name": "TimeRangeVPN",
+                        "label": "Time Range",
+                        "type": 4,
+                        "description": "VPN Metrics",
+                        "value": {
+                          "durationMs": 2592000000
+                        },
+                        "typeSettings": {
+                          "selectableValues": [
+                            {
+                              "durationMs": 300000
+                            },
+                            {
+                              "durationMs": 900000
+                            },
+                            {
+                              "durationMs": 1800000
+                            },
+                            {
+                              "durationMs": 3600000
+                            },
+                            {
+                              "durationMs": 14400000
+                            },
+                            {
+                              "durationMs": 43200000
+                            },
+                            {
+                              "durationMs": 86400000
+                            },
+                            {
+                              "durationMs": 172800000
+                            },
+                            {
+                              "durationMs": 259200000
+                            },
+                            {
+                              "durationMs": 604800000
+                            },
+                            {
+                              "durationMs": 1209600000
+                            },
+                            {
+                              "durationMs": 2419200000
+                            },
+                            {
+                              "durationMs": 2592000000
+                            },
+                            {
+                              "durationMs": 5184000000
+                            },
+                            {
+                              "durationMs": 7776000000
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "style": "pills",
+                    "queryType": 1,
+                    "resourceType": "microsoft.resourcegraph/resources"
+                  },
+                  "name": "parameters - 13"
+                },
+                {
+                  "type": 10,
+                  "content": {
+                    "chartId": "workbooke042ed28-9a23-4da9-a132-36c9b2212f21",
+                    "version": "MetricsItem/2.0",
+                    "size": 0,
+                    "chartType": 2,
+                    "resourceType": "microsoft.network/virtualnetworkgateways",
+                    "metricScope": 0,
+                    "resourceParameter": "VPNNetGateway",
+                    "resourceIds": [
+                      "{VPNNetGateway}"
+                    ],
+                    "timeContextFromParameter": "TimeRangeVPN",
+                    "timeContext": {
+                      "durationMs": 2592000000
+                    },
+                    "metrics": [
+                      {
+                        "namespace": "microsoft.network/virtualnetworkgateways",
+                        "metric": "microsoft.network/virtualnetworkgateways--TunnelAverageBandwidth",
+                        "aggregation": 4,
+                        "splitBy": null
+                      }
+                    ],
+                    "title": "Network Gateway Traffic",
+                    "gridFormatType": 1,
+                    "tileSettings": {
+                      "showBorder": false,
+                      "titleContent": {
+                        "columnMatch": "Name",
+                        "formatter": 13
+                      },
+                      "leftContent": {
+                        "columnMatch": "Value",
+                        "formatter": 12,
+                        "formatOptions": {
+                          "palette": "auto"
+                        },
+                        "numberFormat": {
+                          "unit": 17,
+                          "options": {
+                            "maximumSignificantDigits": 3,
+                            "maximumFractionDigits": 2
+                          }
+                        }
+                      }
+                    },
+                    "mapSettings": {
+                      "locInfo": "AzureResource",
+                      "sizeSettings": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                      "sizeAggregation": "Sum",
+                      "legendMetric": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                      "legendAggregation": "Sum",
+                      "itemColorSettings": {
+                        "type": "heatmap",
+                        "colorAggregation": "Sum",
+                        "nodeColorField": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                        "heatmapPalette": "greenRed"
+                      },
+                      "locInfoColumn": "Name"
+                    },
+                    "graphSettings": {
+                      "type": 0,
+                      "topContent": {
+                        "columnMatch": "Subscription",
+                        "formatter": 1
+                      },
+                      "centerContent": {
+                        "columnMatch": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                        "formatter": 1,
+                        "numberFormat": {
+                          "unit": 17,
+                          "options": {
+                            "maximumSignificantDigits": 3,
+                            "maximumFractionDigits": 2
+                          }
+                        }
+                      }
+                    },
+                    "gridSettings": {
+                      "formatters": [
+                        {
+                          "columnMatch": "Subscription",
+                          "formatter": 5
+                        },
+                        {
+                          "columnMatch": "Name",
+                          "formatter": 13,
+                          "formatOptions": {
+                            "linkTarget": "Resource"
+                          }
+                        },
+                        {
+                          "columnMatch": "Metric",
+                          "formatter": 1
+                        },
+                        {
+                          "columnMatch": "Aggregation",
+                          "formatter": 5
+                        },
+                        {
+                          "columnMatch": "Value",
+                          "formatter": 1
+                        },
+                        {
+                          "columnMatch": "Timeline",
+                          "formatter": 9
+                        }
+                      ],
+                      "rowLimit": 10000
+                    }
+                  },
+                  "name": "metric - 12"
+                },
+                {
+                  "type": 10,
+                  "content": {
+                    "chartId": "workbooke042ed28-9a23-4da9-a132-36c9b2212f21",
+                    "version": "MetricsItem/2.0",
+                    "size": 0,
+                    "chartType": 0,
+                    "resourceType": "microsoft.network/virtualnetworkgateways",
+                    "metricScope": 0,
+                    "resourceParameter": "VPNNetGateway",
+                    "resourceIds": [
+                      "{VPNNetGateway}"
+                    ],
+                    "timeContextFromParameter": "TimeRangeVPN",
+                    "timeContext": {
+                      "durationMs": 2592000000
+                    },
+                    "metrics": [
+                      {
+                        "namespace": "microsoft.network/virtualnetworkgateways",
+                        "metric": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                        "aggregation": 4
+                      },
+                      {
+                        "namespace": "microsoft.network/virtualnetworkgateways",
+                        "metric": "microsoft.network/virtualnetworkgateways--TunnelEgressBytes",
+                        "aggregation": 4
+                      }
+                    ],
+                    "title": "Network Gateway Traffic",
+                    "tileSettings": {
+                      "showBorder": false,
+                      "titleContent": {
+                        "columnMatch": "Name",
+                        "formatter": 13
+                      },
+                      "leftContent": {
+                        "columnMatch": "Value",
+                        "formatter": 12,
+                        "formatOptions": {
+                          "palette": "auto"
+                        },
+                        "numberFormat": {
+                          "unit": 17,
+                          "options": {
+                            "maximumSignificantDigits": 3,
+                            "maximumFractionDigits": 2
+                          }
+                        }
+                      }
+                    },
+                    "mapSettings": {
+                      "locInfo": "AzureResource",
+                      "sizeSettings": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                      "sizeAggregation": "Sum",
+                      "legendMetric": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                      "legendAggregation": "Sum",
+                      "itemColorSettings": {
+                        "type": "heatmap",
+                        "colorAggregation": "Sum",
+                        "nodeColorField": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                        "heatmapPalette": "greenRed"
+                      },
+                      "locInfoColumn": "Name"
+                    },
+                    "graphSettings": {
+                      "type": 0,
+                      "topContent": {
+                        "columnMatch": "Subscription",
+                        "formatter": 1
+                      },
+                      "centerContent": {
+                        "columnMatch": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                        "formatter": 1,
+                        "numberFormat": {
+                          "unit": 17,
+                          "options": {
+                            "maximumSignificantDigits": 3,
+                            "maximumFractionDigits": 2
+                          }
+                        }
+                      }
+                    },
+                    "gridSettings": {
+                      "formatters": [
+                        {
+                          "columnMatch": "Subscription",
+                          "formatter": 5
+                        },
+                        {
+                          "columnMatch": "Name",
+                          "formatter": 13,
+                          "formatOptions": {
+                            "linkTarget": "Resource"
+                          }
+                        },
+                        {
+                          "columnMatch": "Metric",
+                          "formatter": 1
+                        },
+                        {
+                          "columnMatch": "Aggregation",
+                          "formatter": 5
+                        },
+                        {
+                          "columnMatch": "Value",
+                          "formatter": 1
+                        },
+                        {
+                          "columnMatch": "Timeline",
+                          "formatter": 9
+                        },
+                        {
+                          "columnMatch": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                          "formatter": 1,
+                          "numberFormat": {
+                            "unit": 2,
+                            "options": null
+                          }
+                        },
+                        {
+                          "columnMatch": "microsoft.network/virtualnetworkgateways--TunnelEgressBytes",
+                          "formatter": 1,
+                          "numberFormat": {
+                            "unit": 2,
+                            "options": null
+                          }
+                        }
+                      ],
+                      "rowLimit": 10000,
+                      "labelSettings": [
+                        {
+                          "columnId": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes",
+                          "label": "Tunnel Ingress Bytes (Average)"
+                        },
+                        {
+                          "columnId": "microsoft.network/virtualnetworkgateways--TunnelIngressBytes Timeline",
+                          "label": "Tunnel Ingress Bytes Timeline"
+                        },
+                        {
+                          "columnId": "microsoft.network/virtualnetworkgateways--TunnelEgressBytes",
+                          "label": "Tunnel Egress Bytes (Average)"
+                        },
+                        {
+                          "columnId": "microsoft.network/virtualnetworkgateways--TunnelEgressBytes Timeline",
+                          "label": "Tunnel Egress Bytes Timeline"
+                        }
+                      ]
+                    }
+                  },
+                  "name": "metric - 12 - Copy"
+                }
+              ]
+            },
+            "name": "group - 14"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendations for Azure Firewall\r\nReview Azure Firewall without network traffic. These resources are billed hourly, consider reconfiguring or deleting them if they are not in use.\r\n",
+              "style": "success"
+            },
+            "name": "text - 13 - Copy"
+          },
+          {
+            "type": 12,
+            "content": {
+              "version": "NotebookGroup/1.0",
+              "groupType": "editable",
+              "title": "Azure Firewall",
+              "items": [
+                {
+                  "type": 9,
+                  "content": {
+                    "version": "KqlParameterItem/1.0",
+                    "crossComponentResources": [
+                      "{Subscription}"
+                    ],
+                    "parameters": [
+                      {
+                        "id": "46a9cddf-e24f-4992-a503-c820bdb1402c",
+                        "version": "KqlParameterItem/1.0",
+                        "name": "Firewall",
+                        "label": "Azure Firewall",
+                        "type": 5,
+                        "multiSelect": true,
+                        "quote": "'",
+                        "delimiter": ",",
+                        "query": "resources\r\n| where type == \"microsoft.network/azurefirewalls\"",
+                        "crossComponentResources": [
+                          "{Subscription}"
+                        ],
+                        "typeSettings": {
+                          "additionalResourceOptions": [],
+                          "showDefault": false
+                        },
+                        "timeContext": {
+                          "durationMs": 86400000
+                        },
+                        "queryType": 1,
+                        "resourceType": "microsoft.resourcegraph/resources"
+                      },
+                      {
+                        "id": "163bdbb0-202d-41cf-8e59-db6a995b2b92",
+                        "version": "KqlParameterItem/1.0",
+                        "name": "Date",
+                        "type": 4,
+                        "value": {
+                          "durationMs": 1209600000
+                        },
+                        "typeSettings": {
+                          "selectableValues": [
+                            {
+                              "durationMs": 300000
+                            },
+                            {
+                              "durationMs": 900000
+                            },
+                            {
+                              "durationMs": 1800000
+                            },
+                            {
+                              "durationMs": 3600000
+                            },
+                            {
+                              "durationMs": 14400000
+                            },
+                            {
+                              "durationMs": 43200000
+                            },
+                            {
+                              "durationMs": 86400000
+                            },
+                            {
+                              "durationMs": 172800000
+                            },
+                            {
+                              "durationMs": 259200000
+                            },
+                            {
+                              "durationMs": 604800000
+                            },
+                            {
+                              "durationMs": 1209600000
+                            },
+                            {
+                              "durationMs": 2419200000
+                            },
+                            {
+                              "durationMs": 2592000000
+                            }
+                          ]
+                        },
+                        "timeContext": {
+                          "durationMs": 86400000
+                        }
+                      }
+                    ],
+                    "style": "pills",
+                    "queryType": 1,
+                    "resourceType": "microsoft.resourcegraph/resources"
+                  },
+                  "name": "parameters - 0"
+                },
+                {
+                  "type": 10,
+                  "content": {
+                    "chartId": "workbook6957053c-c059-4971-876a-4280f3b0779d",
+                    "version": "MetricsItem/2.0",
+                    "size": 0,
+                    "chartType": 2,
+                    "resourceType": "microsoft.network/azurefirewalls",
+                    "metricScope": 0,
+                    "resourceParameter": "Firewall",
+                    "resourceIds": [
+                      "{Firewall}"
+                    ],
+                    "timeContextFromParameter": "Date",
+                    "timeContext": {
+                      "durationMs": 1209600000
+                    },
+                    "metrics": [
+                      {
+                        "namespace": "microsoft.network/azurefirewalls",
+                        "metric": "microsoft.network/azurefirewalls--DataProcessed",
+                        "aggregation": 1,
+                        "splitBy": null
+                      },
+                      {
+                        "namespace": "microsoft.network/azurefirewalls",
+                        "metric": "microsoft.network/azurefirewalls--Throughput",
+                        "aggregation": 4
+                      }
+                    ],
+                    "gridSettings": {
+                      "rowLimit": 10000
+                    }
+                  },
+                  "name": "metric - 1"
+                }
+              ]
+            },
+            "name": "group - 14"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isEqualTo",
+        "value": "Networking"
+      },
+      "name": "Group Networking"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Storage Accounts Overview\r\n\r\n\r\nUse Azure monitor to review you Storage account metrics, capacity and operations."
+            },
+            "name": "text - 6"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendation - Prefer General Purpose v2 Accounts\r\nGeneral-purpose v2 storage accounts support the latest Azure Storage features and incorporate all of the functionality of general-purpose v1 and Blob storage accounts. General-purpose v2 accounts are recommended for most storage scenarios. \r\n1. General-purpose v2 accounts deliver the lowest per-gigabyte capacity prices for Azure Storage, as well as industry-competitive transaction prices. \r\n2. General-purpose v2 accounts support default account access tiers of hot or cool and blob level tiering between hot, cool, or archive. \r\n3. General-purpose v2 accounts allows you to also use lifecycle management to optimize your storage cost",
+              "style": "success"
+            },
+            "name": "text - 7"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join \t(resources | where type =~ 'Microsoft.Storage/StorageAccounts' and kind !='StorageV2' | extend storageaccount=id, StorageAccountName=name, SAKind=kind, SKUName=sku.name, SKUTier=sku.tier, SARG=resourceGroup, Location=location)on subscriptionId \r\n    | order by id asc\r\n    | project storageaccount,StorageAccountName, SKUName, SKUTier, SAKind, SARG, Location, SubscriptionName",
+              "size": 0,
+              "title": "Storage accounts which are not v2",
+              "noDataMessage": "All storage accounts are V2",
+              "showExportToExcel": true,
+              "exportToExcelOptions": "all",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table"
+            },
+            "name": "query - 6"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendation - right-size your recovery storage replication\r\n\r\nReview Your Recovery Vaults and Backup Vaults replication settings. Consider whether your non production workloads need GRS Storage SKUs.\r\n\r\nNote: You can change the Storage replication SKU after recovery storage deplyoment, before configuring backups.",
+              "style": "success"
+            },
+            "name": "text - 4"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( Resources | where type == 'microsoft.recoveryservices/vaults' | extend recoveryvault=id, skuTier=tostring(sku['tier']),skuName=tostring(sku['name']) , RecoveryVaultName=name, RecoveryVaultLocation=location, RVRG=resourceGroup) on subscriptionId \r\n    | order by id asc\r\n    | project recoveryvault,RecoveryVaultName, RecoveryVaultLocation, RVRG, SubscriptionName ,skuTier ,skuName",
+              "size": 0,
+              "title": "Recovery Vaults Replication ",
+              "noDataMessage": "No recovery service vaults found",
+              "showExportToExcel": true,
+              "exportToExcelOptions": "all",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table"
+            },
+            "name": "query - 8"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Recommendation - review unattached Managed Disks\r\n\r\nManaged disks are billed regardless if they are assigned to a resource or not. Please, review the list and delete the resources that are no longer needed.",
+              "style": "success"
+            },
+            "name": "text - 6"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join (resources | where type =~ 'microsoft.compute/disks' and tostring (properties.diskState) == 'Unattached' and name !has '-ASRReplica' | extend DiskID=id, DiskName=name, SKUName=sku.name, SKUTier=sku.tier, DiskSizeGB=tostring(properties.diskSizeGB),DiskRG=resourceGroup, Location=location, TimeCreated=tostring(properties.timeCreated))on subscriptionId \r\n        | order by id asc \r\n        | project DiskID,DiskName, DiskSizeGB, SKUName, SKUTier, DiskRG, Location, TimeCreated, SubscriptionName",
+              "size": 0,
+              "title": "Unattached disks",
+              "noDataMessage": "No Unattached disks found",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "query - Unattached disks"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isEqualTo",
+        "value": "Storage"
+      },
+      "name": "Group Storage"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Virtual Machines",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Virtual Machines Overview"
+            },
+            "name": "text - 7"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "For customers with Software Assurance, Azure Hybrid Benefit for Windows Server allows you to use your on-premises Windows Server licenses to run Windows virtual machines on Azure at a reduced cost. This article discusses how to deploy new VMs with Azure Hybrid Benefit for Windows Server enabled, and how you can update any existing running VMs. For more information about Azure Hybrid Benefit for Windows Server licensing and cost savings, see the [Azure Hybrid Benefit for Windows Server licensing page](https://azure.microsoft.com/pricing/hybrid-use-benefit/).",
+              "style": "success"
+            },
+            "name": "text - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( resources | where type =~ 'microsoft.compute/virtualmachines' and  tostring(properties.storageProfile.osDisk.osType) == 'Windows' and tostring(properties.['licenseType']) !has 'Windows' | extend WindowsId=id, VMName=name, VMLocation=location, VMRG=resourceGroup, OSType=tostring(properties.storageProfile.imageReference.offer), OsVersion = tostring(properties.storageProfile.imageReference.sku), VMSize=tostring (properties.hardwareProfile.vmSize), LicenseType = tostring(properties.['licenseType'])) on subscriptionId \r\n    | order by VMSize asc \r\n    | project WindowsId,VMName,VMRG,VMSize, VMLocation,OSType, OsVersion,LicenseType, SubscriptionName",
+              "size": 0,
+              "title": "Virtual Machines without Azure Hybrid Benefit enabled",
+              "noDataMessage": "All Windows virtual machines have Azure Hybrid Benefit enabled",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table",
+              "gridSettings": {
+                "hierarchySettings": {
+                  "treeType": 1,
+                  "groupBy": [
+                    "VMSize"
+                  ]
+                }
+              }
+            },
+            "name": "query - 8"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "Azure Hybrid Benefit is a licensing benefit that helps you to significantly reduce the costs of running your Red Hat Enterprise Linux (RHEL) and SUSE Linux Enterprise Server (SLES) virtual machines (VMs) in the cloud. With this benefit, you pay for only the infrastructure costs of your VM because your RHEL or SLES subscription covers the software fee. The benefit is available for all RHEL and SLES Marketplace pay-as-you-go (PAYG) images.",
+              "style": "success"
+            },
+            "name": "text - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( resources | where type =~ 'microsoft.compute/virtualmachines' and  tostring(properties.storageProfile.osDisk.osType) != 'Windows' and isnull(properties.['licenseType']) | extend WindowsId=id, VMName=name, VMLocation=location, VMRG=resourceGroup, OSType=tostring(properties.storageProfile.imageReference.offer), OsVersion = tostring(properties.storageProfile.imageReference.sku), VMSize=tostring (properties.hardwareProfile.vmSize), LicenseType = tostring(properties.['licenseType'])) on subscriptionId \r\n    | order by VMSize asc \r\n    | project WindowsId,VMName,VMRG, VMLocation,OSType, OsVersion,LicenseType, VMSize, SubscriptionName",
+              "size": 0,
+              "title": "Linux Virtual Machines without Azure Hybrid Benefit enabled",
+              "noDataMessage": "All linux virtual machines have Azure Hybrid Benefit enabled",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table"
+            },
+            "name": "query - 2"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( resources | where type =~ 'microsoft.compute/virtualmachines' and tostring(properties.extended.instanceView.powerState.displayStatus) != 'VM deallocated' and tostring(properties.extended.instanceView.powerState.displayStatus) != 'VM running'| extend  VMname=name, PowerState=tostring(properties.extended.instanceView.powerState.displayStatus), VMLocation=location, VMRG=resourceGroup, VMID=id) on subscriptionId\r\n    | order by VMID asc \r\n    | project VMID,VMname, PowerState, VMLocation, VMRG, SubscriptionName",
+              "size": 0,
+              "title": "Virtual Machines in a Stopped State",
+              "noDataMessage": "No Virtual Machines in Stopped State",
+              "noDataMessageStyle": 3,
+              "showExportToExcel": true,
+              "exportToExcelOptions": "all",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table"
+            },
+            "showPin": false,
+            "name": "query - 4"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join (Resources | where type =~ 'Microsoft.Compute/virtualMachines'\r\n    | extend  VMID=id, VMName=name, TotalDataDisks=array_length(properties.storageProfile.dataDisks), TotalNICs=array_length(properties.networkProfile.networkInterfaces), VMLocation=location, VMRG=resourceGroup, VMSKU=tostring(properties.hardwareProfile.vmSize))on subscriptionId\r\n    | project VMID,VMName,VMSKU, TotalDataDisks, TotalNICs, VMLocation, VMRG, SubscriptionName",
+              "size": 0,
+              "title": "All Virtual Machines",
+              "showExportToExcel": true,
+              "exportToExcelOptions": "all",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "gridSettings": {
+                "hierarchySettings": {
+                  "treeType": 1,
+                  "groupBy": [
+                    "VMSKU"
+                  ]
+                }
+              }
+            },
+            "name": "query - 5"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isEqualTo",
+        "value": "VirtualMachines"
+      },
+      "name": "Group Virtual Machines"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Web Apps",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "### Save with Premium v3 reserved instances\r\n\r\nWhen you commit to an Azure App Service Premium v3 reserved instance you can save money. The reservation discount is applied automatically to the number of running instances that match the reservation scope and attributes - you don't need to assign a reservation to a specific instance to get the discounts.\r\n\r\n#### Determine the right reserved instance size before you buy\r\n\r\nBefore you buy a reservation, you should determine the size of the Premium v3 reserved instance that you need. The following sections will help you determine the right Premium v3 reserved instance size.\r\n\r\n#### Use Autoscale appropriately\r\n\r\nAutoscale can be used to provision resources for when they're needed or on demand, which allows you to minimize costs when your environment is idle.",
+              "style": "success"
+            },
+            "showPin": false,
+            "name": "text - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' \r\n    | extend SubscriptionName=name \r\n    | join \t( resources | where type =~ 'Microsoft.Web/sites' \r\n    | extend WebAppId=id, WebAppRG=resourceGroup, WebAppName=name, AppServicePlan=tostring(properties.serverFarmId), SKU=tostring(properties.sku), Type=kind, Status=tostring(properties.state), WebAppLocation=location) on subscriptionId\r\n    | order by WebAppId asc \r\n    | project WebAppId,WebAppName, Type, Status, WebAppLocation, AppServicePlan, WebAppRG,SubscriptionName",
+              "size": 0,
+              "title": "WebApps Status",
+              "noDataMessage": "Sucess",
+              "showExportToExcel": true,
+              "exportToExcelOptions": "all",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "SelectedTab",
+              "comparison": "isEqualTo",
+              "value": "Never"
+            },
+            "name": "query - WebFunctionStatus"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\r\n| where type == \"microsoft.web/serverfarms\"\r\n| extend  skuname = tostring(sku.name) , skutier = tostring(sku.tier), workers=tostring(properties.numberOfWorkers), \r\nmaxworkers=tostring(properties.maximumNumberOfWorkers)\r\n| project id,name,skuname,skutier,workers, maxworkers",
+              "size": 0,
+              "noDataMessageStyle": 3,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "SelectedTab",
+              "comparison": "isEqualTo",
+              "value": "Never"
+            },
+            "name": "query - AppServiceplandetails"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources \r\n| where type ==\"microsoft.insights/autoscalesettings\" \r\n| project id=properties.targetResourceUri, PredictiveAutoscale=properties.predictiveAutoscalePolicy.scaleMode, AutoScaleProfiles=properties.profiles",
+              "size": 0,
+              "title": "query - AutoScaleDetails",
+              "noDataMessageStyle": 3,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "SelectedTab",
+              "comparison": "isEqualTo",
+              "value": "Never"
+            },
+            "name": "query - AutoScaleDetails"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\",\"mergeType\":\"innerunique\",\"leftTable\":\"query - WebFunctionStatus\",\"rightTable\":\"query - AppServiceplandetails\",\"leftColumn\":\"AppServicePlan\",\"rightColumn\":\"id\"},{\"id\":\"71f6b336-0f07-4a5b-a795-ffdb0f1cb08a\",\"mergeType\":\"leftouter\",\"leftTable\":\"query - AppServiceplandetails\",\"rightTable\":\"query - AutoScaleDetails\",\"leftColumn\":\"id\",\"rightColumn\":\"id\"}],\"projectRename\":[{\"originalName\":\"[query - WebFunctionStatus].WebAppId\",\"mergedName\":\"WebAppId\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - WebFunctionStatus].WebAppRG\",\"mergedName\":\"WebAppRG\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - WebFunctionStatus].SubscriptionName\",\"mergedName\":\"SubscriptionName\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - WebFunctionStatus].Status\",\"mergedName\":\"Status\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - WebFunctionStatus].WebAppLocation\",\"mergedName\":\"WebAppLocation\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - WebFunctionStatus].Type\",\"mergedName\":\"Type\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - WebFunctionStatus].AppServicePlan\",\"mergedName\":\"AppServicePlan\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - AppServiceplandetails].skuname\",\"mergedName\":\"skuname\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - AppServiceplandetails].workers\",\"mergedName\":\"workers\",\"fromId\":\"unknown\"},{\"originalName\":\"[query - AppServiceplandetails].maxworkers\",\"mergedName\":\"maxworkers\",\"fromId\":\"unknown\"},{\"originalName\":\"[query - AppServiceplandetails].skutier\",\"mergedName\":\"skutier\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - AutoScaleDetails].PredictiveAutoscale\",\"mergedName\":\"PredictiveAutoscale\",\"fromId\":\"71f6b336-0f07-4a5b-a795-ffdb0f1cb08a\"},{\"originalName\":\"[query - AutoScaleDetails].AutoScaleProfiles\",\"mergedName\":\"AutoScaleProfiles\",\"fromId\":\"71f6b336-0f07-4a5b-a795-ffdb0f1cb08a\"},{\"originalName\":\"[query - WebFunctionStatus].WebAppName\",\"mergedName\":\"WebAppName\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - AppServiceplandetails].name\",\"mergedName\":\"name\",\"fromId\":\"e65e5991-8cf6-4d4d-b0b7-75b1ce30803e\"},{\"originalName\":\"[query - AppServiceplandetails].id\"},{\"originalName\":\"[query - AutoScaleDetails].id\"}]}",
+              "size": 0,
+              "title": "Web Apps",
+              "noDataMessage": "No Web apps found",
+              "showExportToExcel": true,
+              "exportToExcelOptions": "all",
+              "queryType": 7,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "Status",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "Running",
+                          "representation": "Available",
+                          "text": ""
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "Stopped",
+                          "representation": "disabled",
+                          "text": "Stopped"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "success",
+                          "text": "Running"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "hierarchySettings": {
+                  "treeType": 1,
+                  "groupBy": [
+                    "name"
+                  ],
+                  "expandTopLevel": true
+                }
+              }
+            },
+            "showPin": false,
+            "name": "query - 3"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isEqualTo",
+        "value": "WebApps"
+      },
+      "name": "Group WebApps"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "SQL",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "![SQL Hybrid Benefits Overview](https://docs.microsoft.com/en-us/azure/azure-sql/media/azure-hybrid-benefit/pricing.png)\r\n\r\nWith Azure Hybrid Benefit, you can choose to pay only for the underlying Azure infrastructure by using your existing SQL Server license for the SQL Server database engine itself (Base Compute pricing), or you can pay for both the underlying infrastructure and the SQL Server license (License-Included pricing)."
+            },
+            "name": "text - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers\r\n| where type =~ 'Microsoft.Resources/subscriptions' \r\n| extend SubscriptionName=name | join (resources |  where type =~ 'Microsoft.Sql/servers/databases' and name != 'master' and tostring(properties.['licenseType']) == 'LicenseIncluded' \r\n| extend   SQLDBID=id,SQLName = name, SQLRG = resourceGroup, SKUName=sku.name, SKUTier=sku.tier, SQLLocation = location, LicenseType = tostring(properties.['licenseType']), StorageAccountType=tostring(properties.['storageAccountType'])) on subscriptionId \r\n        | project SQLDBID,SQLName,SQLRG, SKUName, SKUTier, SQLLocation, LicenseType, StorageAccountType, SubscriptionName",
+              "size": 0,
+              "title": "Azure SQL Databases not using Hybrid Benefit",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "query - 10"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers\r\n | where type =~ 'Microsoft.Resources/subscriptions' \r\n | extend SubscriptionName=name \r\n | join (resources |  where type =~ 'Microsoft.Sql/managedInstances' and tostring(properties.['licenseType']) == 'LicenseIncluded'\r\n  | extend ManagedInstance=id, SQLRG=resourceGroup, SQLLocation=location, LicenseType = tostring(properties.['licenseType'])) on subscriptionId \r\n | project ManagedInstance,SQLRG, SQLLocation, LicenseType, SubscriptionName",
+              "size": 0,
+              "title": "Azure SQL Managed Instances not using Hybrid Benefit",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "query - 10"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ResourceContainers | where type =~ 'Microsoft.Resources/subscriptions' | extend SubscriptionName=name | join ( resources | where type =~ 'Microsoft.SqlVirtualMachine/SqlVirtualMachines'  and tostring(properties.['sqlServerLicenseType']) != 'AHUB' and properties.sqlImageSku != 'Developer' and properties.sqlImageSku != 'Express'  | extend SQLID=id, VMName = name, VMRG = resourceGroup, VMLocation = location, LicenseType = tostring(properties.['sqlServerLicenseType']), OSType=tostring(properties.storageProfile.imageReference.offer), SQLAgentType = tostring(properties.['sqlManagement']), SQLVersion = tostring(properties.['sqlImageOffer']), SQLSKU=tostring(properties.['sqlImageSku'])) on subscriptionId \r\n    | order by id asc    \r\n    | project SQLID,VMName,VMRG, VMLocation, SQLVersion, SQLSKU, SQLAgentType, LicenseType, SubscriptionName",
+              "size": 0,
+              "title": "SQL Virtual Machines not using Hybrid Benefit",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "query - 9"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isEqualTo",
+        "value": "SQL"
+      },
+      "name": "Group SQL"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "LA Overview",
+        "items": [
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "parameters": [
+                {
+                  "id": "1f74ed9a-e3ed-498d-bd5b-f68f3836a117",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "Subscription",
+                  "type": 6,
+                  "description": "All subscriptions",
+                  "isRequired": true,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "query": "where type =~ 'microsoft.operationalinsights/workspaces'\r\n| summarize Count = count() by subscriptionId\r\n| order by Count desc\r\n| extend Rank = row_number()\r\n| project value = subscriptionId, label = subscriptionId, selected = Rank == 1",
+                  "crossComponentResources": [
+                    "value::selected"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "showDefault": false
+                  },
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources"
+                },
+                {
+                  "id": "df4a3e18-45e6-41fd-ab9b-903226867436",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "ResourceGroup",
+                  "label": " Resource Group",
+                  "type": 5,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "query": "where type =~ 'microsoft.operationalinsights/workspaces'\r\n| summarize Count = count() by resourceGroup\r\n| order by Count desc\r\n| extend Rank = row_number()\r\n| project value = resourceGroup, label = resourceGroup, selected = Rank == 1",
+                  "crossComponentResources": [
+                    "{Subscription}"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "showDefault": false
+                  },
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources"
+                },
+                {
+                  "id": "f60ea0a0-3703-44ca-a59b-df0246423f41",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "Workspace",
+                  "type": 5,
+                  "isRequired": true,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "query": "where type =~ 'microsoft.operationalinsights/workspaces'\r\n| where resourceGroup in ({ResourceGroup:value})\r\n| order by name asc\r\n| extend Rank = row_number()\r\n| project value = id, label = id, selected = Rank <= 5",
+                  "crossComponentResources": [
+                    "{Subscription}"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "showDefault": false
+                  },
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources"
+                },
+                {
+                  "id": "182d6324-854c-4cc0-802a-de4f3bee9f76",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "TimeRange",
+                  "label": "Time range",
+                  "type": 4,
+                  "isRequired": true,
+                  "value": {
+                    "durationMs": 2592000000
+                  },
+                  "typeSettings": {
+                    "selectableValues": [
+                      {
+                        "durationMs": 300000
+                      },
+                      {
+                        "durationMs": 900000
+                      },
+                      {
+                        "durationMs": 1800000
+                      },
+                      {
+                        "durationMs": 3600000
+                      },
+                      {
+                        "durationMs": 14400000
+                      },
+                      {
+                        "durationMs": 43200000
+                      },
+                      {
+                        "durationMs": 86400000
+                      },
+                      {
+                        "durationMs": 172800000
+                      },
+                      {
+                        "durationMs": 259200000
+                      },
+                      {
+                        "durationMs": 604800000
+                      },
+                      {
+                        "durationMs": 1209600000
+                      },
+                      {
+                        "durationMs": 2592000000
+                      }
+                    ],
+                    "allowCustom": true
+                  }
+                },
+                {
+                  "id": "5ab45df9-371b-4dba-8ee3-6ec9fbb33ff9",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "Message",
+                  "type": 1,
+                  "query": "where type =~ 'microsoft.operationalinsights/workspaces'\r\n| summarize Selected = countif(id in ({Workspace:value})), Total = count()\r\n| extend Selected = iff(Selected > 200, 200, Selected)\r\n| project Message = strcat('# ', Selected, ' / ', Total)",
+                  "crossComponentResources": [
+                    "{Subscription}"
+                  ],
+                  "isHiddenWhenLocked": true,
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources"
+                },
+                {
+                  "id": "46dfcfa4-d5d4-47c2-9dfd-ca0fcb935dc7",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "ResourceName",
+                  "type": 1,
+                  "description": "Used for 'No Subscriptions' workbook template",
+                  "isRequired": true,
+                  "isHiddenWhenLocked": true,
+                  "criteriaData": [
+                    {
+                      "criteriaContext": {
+                        "operator": "Default",
+                        "rightValType": "param",
+                        "resultValType": "static",
+                        "resultVal": "Log Analytics Workspace"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "1c84117c-7449-4484-b693-00f41a578bd6",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "ResourceImageUrl",
+                  "type": 1,
+                  "description": "Used for 'No Subscriptions' workbook template",
+                  "isHiddenWhenLocked": true,
+                  "timeContext": {
+                    "durationMs": 0
+                  },
+                  "timeContextFromParameter": "TimeRange"
+                }
+              ],
+              "style": "above",
+              "queryType": 0,
+              "resourceType": "microsoft.resourcegraph/resources"
+            },
+            "name": "Log Analytics Workspace parameters",
+            "styleSettings": {
+              "margin": "15px 0 0 0"
+            }
+          },
+          {
+            "type": 12,
+            "content": {
+              "version": "NotebookGroup/1.0",
+              "groupType": "editable",
+              "items": [
+                {
+                  "type": 1,
+                  "content": {
+                    "json": "## No Subscriptions are selected.\r\n\r\nSelect one or more subscriptions to get started. If no subscriptions appear, we could not find any {ResourceName} resources in your subscriptions and you may need to [update your default subscription filter](https://azure.microsoft.com/en-us/updates/updates-to-subscription-filtering/)."
+                  },
+                  "name": "No Subscription text"
+                },
+                {
+                  "type": 12,
+                  "content": {
+                    "version": "NotebookGroup/1.0",
+                    "groupType": "editable",
+                    "items": [
+                      {
+                        "type": 1,
+                        "content": {
+                          "json": "<img src=\"{ResourceImageUrl}\" alt=\"{ResourceName}\" width=\"100px\" height=\"100px\">"
+                        },
+                        "name": "text - 0"
+                      }
+                    ]
+                  },
+                  "conditionalVisibility": {
+                    "parameterName": "ResourceImageUrl",
+                    "comparison": "isNotEqualTo"
+                  },
+                  "name": "ResourceImageUrl"
+                }
+              ]
+            },
+            "conditionalVisibility": {
+              "parameterName": "Subscription",
+              "comparison": "isEqualTo",
+              "value": ""
+            },
+            "name": "No Subscriptions group"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "{Message}\r\n_Log Analytics workspace(s)_\r\n<br />\r\n<br />"
+            },
+            "name": "resource summary",
+            "styleSettings": {
+              "margin": "15px 0 10px 10px"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "where type =~ 'microsoft.operationalinsights/workspaces'\r\n| where '{Workspace:name}' has name\r\n| extend \r\n  state = trim(' ', tostring(properties.provisioningState)),\r\n  sku = trim(' ', tostring(properties.sku.name)),\r\n  skuUpdate = trim(' ', tostring(properties.sku.lastSkuUpdate)),\r\n  retentionDays = trim(' ', tostring(properties.retentionInDays)),\r\n  dailyquotaGB  = trim(' ', tostring(properties.workspaceCapping.dailyQuotaGb))\r\n| extend dailyquotaGB = iif(dailyquotaGB !=-1.0, dailyquotaGB,\"--\")\r\n| project ['Workspace']=id, Name=name, ['Resource Group']=strcat(\"/subscriptions/\", subscriptionId, \"/resourceGroups/\", resourceGroup), ['Location']=location, ['Retention (days)']=retentionDays, ['Daily Cap (GB)']=dailyquotaGB, ['Licence']=sku, Subscription=strcat(\"/subscriptions/\", subscriptionId)",
+              "size": 3,
+              "showAnalytics": true,
+              "noDataMessage": "No workspaces found",
+              "showRefreshButton": true,
+              "exportFieldName": "Name",
+              "exportParameterName": "SelectedWS",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "$gen_group",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": "Resource",
+                      "subTarget": "insights",
+                      "showIcon": true,
+                      "customColumnWidthSetting": "35%"
+                    }
+                  },
+                  {
+                    "columnMatch": "Workspace",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "Name",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "Resource Group",
+                    "formatter": 14,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": false,
+                      "customColumnWidthSetting": "10%"
+                    }
+                  },
+                  {
+                    "columnMatch": "Location",
+                    "formatter": 0,
+                    "formatOptions": {
+                      "customColumnWidthSetting": "15%"
+                    }
+                  },
+                  {
+                    "columnMatch": "Retention (days)",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "min": 1,
+                      "max": 730,
+                      "palette": "blue",
+                      "customColumnWidthSetting": "10%"
+                    }
+                  },
+                  {
+                    "columnMatch": "Daily Cap (GB)",
+                    "formatter": 0,
+                    "formatOptions": {
+                      "customColumnWidthSetting": "10%"
+                    }
+                  },
+                  {
+                    "columnMatch": "Licence",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "colors",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "pergb2018",
+                          "representation": "turquoise",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "premium",
+                          "representation": "lightBlue",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "lacluster",
+                          "representation": "red",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "standard",
+                          "representation": "green",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "free",
+                          "representation": "blue",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "capacityreservation",
+                          "representation": "yellow",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "pernode",
+                          "representation": "orange",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "==",
+                          "thresholdValue": "standalone",
+                          "representation": "purple",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "gray",
+                          "text": "{0}{1}"
+                        }
+                      ],
+                      "compositeBarSettings": {
+                        "labelText": "",
+                        "columnSettings": []
+                      },
+                      "customColumnWidthSetting": "10%"
+                    }
+                  },
+                  {
+                    "columnMatch": "Subscription",
+                    "formatter": 5
+                  }
+                ],
+                "hierarchySettings": {
+                  "treeType": 1,
+                  "groupBy": [
+                    "Subscription"
+                  ],
+                  "expandTopLevel": true,
+                  "finalBy": "Workspace"
+                },
+                "labelSettings": [
+                  {
+                    "columnId": "Licence",
+                    "label": "License"
+                  }
+                ]
+              }
+            },
+            "customWidth": "60",
+            "conditionalVisibility": {
+              "parameterName": "Workspace",
+              "comparison": "isNotEqualTo"
+            },
+            "name": "Worksapces Overview"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "where type =~ 'microsoft.operationalinsights/workspaces'\r\n| where '{Workspace:name}' has name\r\n| project ['Workspace']=id, Name=name, ['Resource Group']=strcat(\"/subscriptions/\", subscriptionId, \"/resourceGroups/\", resourceGroup), location\r\n",
+              "size": 0,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "map",
+              "mapSettings": {
+                "locInfo": "AzureLoc",
+                "locInfoColumn": "location",
+                "sizeSettings": "Workspace",
+                "sizeAggregation": "Count",
+                "defaultSize": 40,
+                "labelSettings": "location",
+                "legendMetric": "location",
+                "legendAggregation": "Count",
+                "itemColorSettings": null
+              }
+            },
+            "customWidth": "40",
+            "conditionalVisibility": {
+              "parameterName": "Workspace",
+              "comparison": "isNotEqualTo"
+            },
+            "name": "WorkspaceMap",
+            "styleSettings": {
+              "margin": "0px 0px 0px 50px"
+            }
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "SelectedTab",
+        "comparison": "isEqualTo",
+        "value": "LogAnalytics"
+      },
+      "name": "LA Overview"
+    }
+  ],
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
