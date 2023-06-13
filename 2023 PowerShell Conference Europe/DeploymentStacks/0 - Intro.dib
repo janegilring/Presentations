@@ -1,0 +1,82 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# What are deployment stacks?
+
+> IMPORTANT: 
+> Deployment stacks is currently in _private preview_. Thus, please treat this
+> information as confidential and don't share publicly.
+
+Many Azure administrators find it difficult to manage the lifecycle of their cloud infrastructure.
+For example, infrastructure deployed in Azure may span multiple
+management groups, subscriptions, and resource groups. Deployment stacks simplify lifecycle management for your Azure deployments, regardless of their complexity.
+
+A _deployment stack_ is a native Azure resource type that enables you to perform operations on
+a resource collection as an atomic unit. Deployment stacks are defined in ARM
+as the type `Microsoft.Resources/deploymentStacks`.
+
+Because the deployment stack is a native Azure resource, you can perform all typical Azure
+Resource Manager (ARM) operations on the resource, including:
+
+- Azure role-based access control (RBAC) assignments
+- Security recommendations surfaced by Microsoft Defender for Cloud
+- Azure Policy assignments
+
+Any Azure resource created using a deployment stack is managed by it, and subsequent updates to that
+deployment stack, combined with value of the newest iteration's `actionOnUnmanage` property, allows you to control
+the lifecycle of the resources managed by the deployment stack. When a deployment stack is updated,
+the new set of managed resources will be determined by the resources defined in the template.
+
+To create your first deployment stack, work through our [quickstart tutorial](./TUTORIAL.md).
+
+## Deployment stacks tools installation (PowerShell on Windows, macOS, and Linux)
+
+Use the following steps to install the deployment stacks PowerShell cmdlets:
+
+1. Install the latest `Az` PowerShell module.
+
+1. Open an elevated PowerShell session.
+
+1. Run the following command to bypass local script signing policy in your session.
+
+#!pwsh
+
+Set-ExecutionPolicy Bypass -Scope Process
+
+#!markdown
+
+1. Download the latest [deployment stacks installation package](https://github.com/Azure/deployment-stacks/releases), unzip the package, and then run the installation `.ps1` script. You can choose to install the module either in the current PowerShell session or system-wide.
+
+#!pwsh
+
+./AzDeploymentStacksPrivatePreview.ps1
+
+#!markdown
+
+1. Set the current subscription context to your preferred Azure subscription. As long
+as the deployment stacks feature has been enabled in your Azure AD tenant, the feature is
+available for all subscriptions.
+
+#!pwsh
+
+Connect-AzAccount
+Set-AzContext -SubscriptionId '<subscription-id>'
+
+#!markdown
+
+1. Verify the PowerShell module is availabe
+
+#!pwsh
+
+Get-Module -Name Az.Resources -ListAvailable
+
+#!markdown
+
+1. Verify the deployment stacks PowerShell commands are available in your PowerShell session by running the following command:
+
+#!pwsh
+
+Get-Command -Name *DeploymentStack*
