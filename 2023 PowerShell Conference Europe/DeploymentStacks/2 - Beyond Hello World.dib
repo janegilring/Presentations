@@ -1,0 +1,72 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Beyond Hello World
+
+#!markdown
+
+Azure IPAM is a lightweight solution developed on top of the Azure platform designed to help Azure customers manage their IP Address space easily and effectively.
+
+Documentation: [azure.github.io/ipam](azure.github.io/ipam)
+
+#!pwsh
+
+cd /tmp
+git clone https://github.com/Azure/ipam.git
+cd .\ipam\deploy
+Get-ChildItem | Format-Wide Name
+
+#!pwsh
+
+  $Location = "northeurope"
+  $LandingZoneSubscriptionId = 'e4b60627-c354-4db6-8e7b-aab3e6204415'
+  $TemplateFile = "/tmp/ipam/deploy/main.bicep"
+  $TemplateParameterFile = "/workspaces/msftdemo/azure/infrastructure_as_code/bicep/ipam-example/main.parameters.json"
+
+  $null = Set-AzContext $LandingZoneSubscriptionId
+
+  $inputObject = @{
+    Name                        = 'Azure-IPAM'
+    #DeploymentResourceGroupName = 'psc-ipam-rg'
+    Location                    = $Location
+    TemplateFile                = $TemplateFile
+    TemplateParameterFile       = $TemplateParameterFile
+    DeleteResources             = $true
+    DeleteResourceGroups        = $true
+    DenySettingsMode            = 'DenyWriteAndDelete'
+    Force                       = $true
+    Verbose                     = $true
+  }
+
+  New-AzSubscriptionDeploymentStack @inputObject
+
+#!pwsh
+
+Get-AzSubscriptionDeploymentStack -Name 'Azure-IPAM'
+
+#!markdown
+
+# DenySettingsMode
+
+Verify the following:
+- Unable to modify a managed resource, for example the Key Vault
+- Unable to delete resources
+
+#!markdown
+
+# Remove deployment
+
+#!pwsh
+
+Remove-AzSubscriptionDeploymentStack -Name Azure-IPAM -DeleteAll -Force
+
+#!pwsh
+
+Remove-AzSubscriptionDeploymentStack -Name Azure-IPAM -DeleteResources -Force
+
+#!pwsh
+
+Remove-AzSubscriptionDeploymentStack -Name Azure-IPAM -DeleteResourceGroups -Force

@@ -1,0 +1,119 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Real world scenario: Azure Landing Zones deployment
+
+An Azure landing zone architecture is scalable and modular to meet a range of deployment needs. A repeatable infrastructure allows you to consistently apply configurations and controls to every subscription. Modules make it easy to deploy and modify specific components of the Azure landing zone architecture as your requirements evolve.
+
+More information: [aka.ms/alz](https://aka.ms/alz/)
+
+![Azure Landing Zones reference architecture](./images/azure_landing_zones_reference_architecture.svg)
+
+![Example deployment flow](./images/deployment_stack_example_flow.jpg)
+
+> NOTE: Since Deployment Stacks do not support deployments to Management Groups during Public Preview, regular deployments are use for those pipeline steps.
+
+## Stack 1 - Management Group hierarchy
+
+![Management groups](./images/ALZ_MgmtGroups.svg)
+
+More information about the policies assigned in the hiearchy is available [here.](https://github.com/Azure/Enterprise-Scale/wiki/ALZ-Policies)
+
+#!markdown
+
+- [Deployment-files](3_links.ps1)
+- Repository containing ALZ Bicep accelerator deployment using Deployment Stacks: [github.com/janegilring/alzstacksdemo](https://github.com/janegilring/alzstacksdemo)
+
+#!pwsh
+
+Get-AzManagementGroupDeploymentStack -Name 'ALZ-Management-Groups' -ManagementGroupId 'fd91810c-57b4-43e3-b513-c2a81e8d6a27'
+
+#!markdown
+
+## Stack 2 - Logging
+
+- Azure Automation account
+- Log Analytics workspace
+- Sentinel
+
+
+### Notes
+
+DenySettingsMode
+- DenyWriteAndDelete
+    - Added excluded-principal for runbook deploy SPN
+
+#!pwsh
+
+Get-AzManagementGroupDeploymentStack -Name 'ALZ-Logging' -ManagementGroupId 'fd91810c-57b4-43e3-b513-c2a81e8d6a27'
+
+#!pwsh
+
+Set-AzManagementGroupDeploymentStack -Name 'ALZ-Logging' -ManagementGroupId 'fd91810c-57b4-43e3-b513-c2a81e8d6a27'
+
+#!markdown
+
+## ApplyToChildScopes
+
+Example using Azure Automation, which have runbooks as child resources
+
+#!pwsh
+
+(Get-AzManagementGroupDeploymentStack -Name 'ALZ-Logging' -ManagementGroupId 'fd91810c-57b4-43e3-b513-c2a81e8d6a27').denySettings
+
+#!markdown
+
+## Stack 3 - Custom Azure Policy Definitions
+
+#!pwsh
+
+Get-AzManagementGroupDeploymentStack -Name 'ALZ-Policies' -ManagementGroupId 'fd91810c-57b4-43e3-b513-c2a81e8d6a27'
+
+#!markdown
+
+## Stack 4 - Connectivity
+
+Networking components
+- Hub Virtual Network
+- Azure Firewall
+- Azure VPN
+- Azure ExpressRoute
+- Azure Private DNS zones
+- and more
+
+#!pwsh
+
+Get-AzManagementGroupDeploymentStack -Name 'ALZ-Connectivity' -ManagementGroupId 'psc-platform-connectivity'
+
+#!markdown
+
+# Deployment
+
+Deployed via GitHub Actions
+- Triggers on changes to template files or parameter files
+
+#!markdown
+
+# Gotchas
+
+## Dependencies
+
+Due to dependencies between the stacks, the following error was returned when applying a stack which interacted with the Log Analytics workspace:
+```
+7:52:22 - The deployment
+     | 'alz-MGDiagnosticSettings-20230610T0706309253Z' failed with error(s).
+     | Showing 3 out of 20 error(s). Status Message: The client
+     | '2702bead-8908-4edd-a184-d8e3232fa109' with object id
+     | '2702bead-8908-4edd-a184-d8e3232fa109' has permission to perform action
+     | 'Microsoft.Insights/diagnosticSettings/write' on scope
+     | '/providers/Microsoft.Management/managementGroups/psc-platform-connectivity/providers/Microsoft.Insights/diagnosticSettings/toLa'; however, it does not have permission to perform action 'Microsoft.OperationalInsights/workspaces/sharedKeys/action' on the '0' linked scope(s) '' or the linked scope(s) are invalid and is blocked by deny assignments on the '1' linked scope(s) '/subscriptions/72949fb8-297a-4da5-bfed-aed671c680d0/resourcegroups/rg-psc-logging/providers/microsoft.operationalinsights/workspaces/psc-log-analytics'. (Code:LinkedAuthorizationFailed)  Status Message: The client '2702bead-8908-4edd-a184-d8e3232fa109' with object id '2702bead-8908-4edd-a184-d8e3232fa109' has permission to perform action 'Microsoft.Insights/diagnosticSettings/write' on scope '/providers/Microsoft.Management/managementGroups/psc-platform-management/providers/Microsoft.Insights/diagnosticSettings/toLa'; however, it does not have permission to perform action 'Microsoft.OperationalInsights/workspaces/sharedKeys/action' on the '0' linked scope(s) '' or the linked scope(s) are invalid and is blocked by deny assignments on the '1' linked scope(s) '/subscriptions/72949fb8-297a-4da5-bfed-aed671c680d0/resourcegroups/rg-psc-logging/providers/microsoft.operationalinsights/workspaces/psc-log-analytics'. (Code:LinkedAuthorizationFailed)  Status Message: The client '2702bead-8908-4edd-a184-d8e3232fa109' with object id '2702bead-8908-4edd-a184-d8e3232fa109' has permission to perform action 'Microsoft.Insights/diagnosticSettings/write' on scope '/providers/Microsoft.Management/managementGroups/psc/providers/Microsoft.Insights/diagnosticSettings/toLa'; however, it does not have permission to perform action 'Microsoft.OperationalInsights/workspaces/sharedKeys/action' on the '0' linked scope(s) '' or the linked scope(s) are invalid and is blocked by deny assignments on the '1' linked scope(s) '/subscriptions/72949fb8-297a-4da5-bfed-aed671c680d0/resourcegroups/rg-psc-logging/providers/microsoft.operationalinsights/workspaces/psc-log-analytics'. (Code:LinkedAuthorizationFailed)  CorrelationId: baf3914e-eed0-480a-ba5c-2defbb1ca9ce
+```
+
+### Solution
+
+Add SPNs object ID to DenySettingsExcludedPrincipals
+or
+Add action to DenySettingsExcludedActions
