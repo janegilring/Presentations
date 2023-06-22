@@ -1,0 +1,45 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Continous Integration and Continous Deployment (CICD)
+
+
+You can use PSRule for Azure to validate Azure resources throughout their lifecycle. By using validation within a continuous integration (CI) pipeline, any issues provide fast feedback.
+
+PSRule documentation for pipeline creation:
+[https://azure.github.io/PSRule.Rules.Azure/creating-your-pipeline/](https://azure.github.io/PSRule.Rules.Azure/creating-your-pipeline/)
+
+
+## Azure DevOps - Pipelines
+
+Extension for using PSRule within Azure Pipelines:
+
+- GitHub repository: [https://github.com/microsoft/PSRule-pipelines](https://github.com/microsoft/PSRule-pipelines)
+
+- Marketplace: [https://marketplace.visualstudio.com/items?itemName=bewhite.ps-rule](https://marketplace.visualstudio.com/items?itemName=bewhite.ps-rule)
+
+### Demos
+
+- [PSRule.Rules.Azure-quickstart](https://dev.azure.com/janegilringmsft/infrastructure-as-code/_build?definitionScope=%5CPSRule.Rules.Azure-quickstart)
+
+#### Related extensions
+
+[SARIF SAST Scans Tab by Microsoft DevLabs](https://marketplace.visualstudio.com/items?itemName=sariftools.scans&targetId=3ce9b8b8-70df-4673-bff8-f62b587fa434&utm_source=vstsproduct&utm_medium=ExtHubManageList)
+- Adds a 'Scans' tab to each Build Result and Work Item for viewing associated SARIF SAST logs.
+- SARIF is the Static Analysis Results Interchange Format. More information [here](https://sarif.info/).
+
+## GitHub Actions
+
+Extension for using PSRule within GitHub Actions:
+
+- GitHub repository: [https://github.com/microsoft/ps-rule](https://github.com/microsoft/ps-rule)
+
+- Marketplace: [https://github.com/marketplace/actions/psrule](https://github.com/marketplace/actions/psrule)
+
+### Demos
+
+- [PSRule.Rules.Azure-quickstart](https://github.com/janegilring/PSRule.Rules.Azure-quickstart/actions)
+- [Practical example](https://github.com/janegilring/msftdemo/blob/main/.github/workflows/psrule-demo.yaml)

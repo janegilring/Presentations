@@ -1,0 +1,262 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Testing existing infrastructure
+
+The current state of Azure resources can be tested with PSRule for Azure, referred to as _in-flight_ analysis.
+This is a two step process that works in high security environments with separation of roles.
+
+After the current state has been exported, offline analysis can be performed against the saved state.
+
+ To export data from a subscription, Azure PowerShell modules must be installed.
+ Exporting rule data can also be automated and scheduled with services like Azure Automation.
+ However, for this scenario we will focus how to run this process interactively.
+
+To perform analysis on Azure resources the current configuration state is exported to a JSON file format.
+The exported state is processed later during analysis.
+
+- **What's exported** &mdash; Configurations such as:
+  - Resource SKUs, names, tags, and settings configured for an Azure resource.
+- **What's not exported** &mdash; Resource data such as:
+  - The contents of blobs stored on a storage account, or databases tables.
+
+## Export an Azure subscription
+
+The state of resources from the current Azure subscription will be exported by using the following commands:
+
+```powershell
+# STEP 1: Authenticate to Azure, only required if not currently connected
+Connect-AzAccount
+
+# STEP 2: Confirm the current subscription context
+Get-AzContext
+
+# STEP 3: Exports Azure resources to JSON files
+Export-AzRuleData -OutputPath 'out/'
+```
+
+#!pwsh
+
+Export-AzRuleData -OutputPath /workspaces/PSRule.Rules.Azure-quickstart/export
+
+#!pwsh
+
+Export-AzRuleData -OutputPath /workspaces/PSRule.Rules.Azure-quickstart/export -Subscription alz-Jan-Egil-Ring-xoh4Ie-Haet4-Management -ResourceGroupName rg-psc-logging
+
+#!markdown
+
+### Additional options
+
+By default, resource data for the current subscription context will be exported.
+
+To export resource data for specific subscriptions use:
+
+- `-Subscription` - to specify subscriptions by id or name.
+- `-Tenant` - to specify subscriptions within an Azure Active Directory Tenant by id.
+
+For example:
+
+```powershell
+# Export data from two specific subscriptions
+Export-AzRuleData -Subscription 'Contoso Production', 'Contoso Non-production'
+```
+
+To export specific resource data use:
+
+- `-ResourceGroupName` - to filter resources by Resource Group.
+- `-Tag` - to filter resources based on tag.
+
+For example:
+
+```powershell
+# Export information from two resource groups within the current subscription context
+Export-AzRuleData -ResourceGroupName 'rg-app1-web', 'rg-app1-db'
+```
+
+To export resource data for all subscription contexts use:
+
+- `-All` - to export resource data for all subscription contexts.
+
+For example:
+
+```powershell
+# Export data from all subscription contexts
+Export-AzRuleData -All
+```
+
+#!markdown
+
+# Analyzing exported state
+
+The state of resources can be analyzed for exported state by using the `Invoke-PSRule` PowerShell cmdlet.
+
+For example:
+
+```powershell
+Invoke-PSRule -InputPath 'out/' -Module 'PSRule.Rules.Azure';
+```
+
+To filter results to only failed rules, use `Invoke-PSRule -Outcome Fail`.
+Passed, failed and error results are shown by default.
+
+For example:
+
+```powershell
+# Only show failed results
+Invoke-PSRule -InputPath 'out/' -Module 'PSRule.Rules.Azure' -Outcome Fail;
+```
+
+#!pwsh
+
+Assert-PSRule -InputPath '/workspaces/PSRule.Rules.Azure-quickstart/export/' -Module 'PSRule.Rules.Azure' -Outcome Fail
+
+#!pwsh
+
+Assert-PSRule -InputPath '/workspaces/PSRule.Rules.Azure-quickstart/export/' -Module 'PSRule.Rules.Azure' -Outcome Fail -As Summary
+
+#!markdown
+
+## Ignoring rules
+
+To prevent a rule executing you can either:
+
+- **Exclude** &mdash; The rule is not executed for any resource.
+- **Suppress** &mdash; The rule is not executed for a specific resource by name.
+
+To exclude a rule, set `Rule.Exclude` option within the `ps-rule.yaml` file.
+
+```yaml
+rule:
+  exclude:
+  # Ignore the following rules for all resources
+  - Azure.VM.UseHybridUseBenefit
+  - Azure.VM.Standalone
+```
+
+To suppress a rule, set `Suppression` option within the `ps-rule.yaml` file.
+
+```yaml
+suppression:
+  Azure.AKS.AuthorizedIPs:
+  # Exclude the following externally managed AKS clusters
+  - aks-cluster-prod-eus-001
+  Azure.Storage.SoftDelete:
+  # Exclude the following non-production storage accounts
+  - storagedeveus6jo36t
+  - storagedeveus1df278
+```
+
+#### Tip
+- Use comments within `ps-rule.yaml` to describe the reason why rules are excluded or suppressed.
+- Meaningful comments help during peer review within a Pull Request (PR).
+- Also consider including a date if the exclusions or suppressions are temporary.
+
+#!markdown
+
+# PSRule for Azure Monitor
+
+Log PSRule analysis results to Azure Monitor.
+
+Documentation: [PSRule.Monitor](https://github.com/microsoft/PSRule.Monitor)
+
+
+### Upload results with PSRule convention
+
+A convention can be used to upload the results of a PSRule analysis to Azure Monitor.
+To use the convention:
+
+- Install the `PSRule.Monitor` module from the PowerShell Gallery.
+- Include the `PSRule.Monitor` module.
+  This can be set in PSRule options or specified at runtime as a parameter.
+- Reference `Monitor.LogAnalytics.Import` convention.
+  This can be set in PSRule options or specified at runtime as a parameter.
+
+For example:
+
+```yaml
+include:
+  module:
+  - 'PSRule.Monitor'
+
+convention:
+  include:
+  - 'Monitor.LogAnalytics.Import
+```
+
+When using the convention a Log Analytics workspace must be specified.
+This can be done by setting the following environment variables:
+
+- `PSRULE_CONFIGURATION_MONITOR_WORKSPACE_ID` - Containing the Log Analytics workspace ID.
+- `PSRULE_CONFIGURATION_MONITOR_WORKSPACE_KEY` - Containing either the primary or secondary key to the workspace.
+  This value is sensitive and should be stored securely.
+  To protect this value, avoid storing it in source control.
+
+For example:
+
+```powershell
+# PowerShell: Setting environment variable
+$Env:PSRULE_CONFIGURATION_MONITOR_WORKSPACE_ID = '00000000-0000-0000-0000-000000000000'
+$Env:PSRULE_CONFIGURATION_MONITOR_WORKSPACE_KEY = Get-Secret -Name 'WORKSPACE_KEY' -AsPlainText
+```
+
+```yaml
+# GitHub Actions: Setting environment variable with microsoft/ps-rule action
+- name: Run PSRule analysis
+  uses: microsoft/ps-rule@main
+  env:
+    PSRULE_CONFIGURATION_MONITOR_WORKSPACE_ID: 00000000-0000-0000-0000-000000000000
+    PSRULE_CONFIGURATION_MONITOR_WORKSPACE_KEY: ${{ secrets.WORKSPACE_KEY }}
+```
+
+```yaml
+# Azure Pipelines: Setting environment variable with ps-rule-assert task
+- task: ps-rule-assert@0
+  displayName: Run PSRule analysis
+  inputs:
+    inputType: repository
+  env:
+    PSRULE_CONFIGURATION_MONITOR_WORKSPACE_ID: 00000000-0000-0000-0000-000000000000
+    PSRULE_CONFIGURATION_MONITOR_WORKSPACE_KEY: $(WORKSPACE_KEY)
+```
+
+### Upload results with PowerShell
+
+To upload results from PSRule to Azure Monitor, use the `Send-PSRuleMonitorRecord` cmdlet.
+Results can by piped directly from `Invoke-PSRule` or stored and piped from a variable.
+
+The `Send-PSRuleMonitorRecord` cmdlet requires a Log Analytics workspace to send data to.
+A workspace can be specified by using the `-WorkspaceId` and `-SharedKey` parameters.
+
+For example:
+
+```powershell
+$data | Invoke-PSRule | Send-PSRuleMonitorRecord -WorkspaceId <workspaceId> -SharedKey <primaryKey>;
+```
+
+The following example shows using analysis results from a pre-built module:
+
+```powershell
+$results = Invoke-PSRule -InputPath .\*.json -Module 'PSRule.Rules.Azure';
+$results | Send-PSRuleMonitorRecord -WorkspaceId <workspaceId> -SharedKey <primaryKey>;
+```
+
+### Querying logs from Azure Monitor
+
+By default, PSRule results are stored in the `PSRule_CL` table.
+The results can be queries from the Log Analytics workspace using Kusto.
+
+The following query returns all rule records from the last hour that failed:
+
+```kusto
+PSRule_CL
+| where Outcome_s == "Fail" and TimeGenerated > ago(1h)
+```
+
+To query these results from PowerShell use:
+
+```powershell
+Invoke-AzOperationalInsightsQuery -WorkspaceId <workspaceId> -Query 'PSRule_CL | where Outcome_s == "Fail" and TimeGenerated > ago(1h)'
+```

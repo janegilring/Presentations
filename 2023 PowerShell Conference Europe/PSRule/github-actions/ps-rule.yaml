@@ -1,0 +1,20 @@
+#
+# PSRule configuration
+#
+
+# Please see the documentation for all configuration options:
+# https://aka.ms/ps-rule/options
+
+requires:
+  PSRule: '@pre >=2.6.0'
+
+output:
+  culture:
+    - 'en-US'
+
+## Enable expansion for Bicep source files.
+configuration:
+  AZURE_BICEP_FILE_EXPANSION: true
+
+execution:
+  unprocessedObject: Ignore

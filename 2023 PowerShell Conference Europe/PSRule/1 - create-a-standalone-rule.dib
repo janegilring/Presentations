@@ -1,0 +1,107 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Create a standalone rule
+
+You can use PSRule to create tests for PowerShell objects piped to PSRule for validation.
+Each test is called a _rule_.
+
+PSRule allows you to write rules using YAML, JSON, or PowerShell.
+Regardless of the format you choose, any combination of YAML, JSON, or PowerShell rules can be used together.
+
+#!markdown
+
+## Scenario 1 - Test for image files
+
+In our quickstart scenario, we have been tasked with creating a rule to test for image files.
+When a file ending with the `.jpg` or `.png` extension is found the rule should fail.
+
+We will be using the following PowerShell code to get a list of files.
+
+#!pwsh
+
+$files = Get-ChildItem -Path './examples/images' -File -Recurse
+$files.Name
+
+#!markdown
+
+### Define the file type rule
+
+Before an object can be tested with PSRule, one or more rules must be defined.
+Each rule is defined in a file named with the suffix `.Rule.yaml`, `.Rule.jsonc`, or `.Rule.ps1`.
+Multiple rules can be defined in a single file.
+
+A rule that fail on files with `.jpg` or `.png` extensions is shown in YAML, JSON, and PowerShell formats.
+You only need to choose one format, however you can choose to create all three to try out each format.
+
+[FileType.Rule.ps1](./examples/standalone-rules/FileType.Rule.ps1)
+
+#!pwsh
+
+$files = Get-ChildItem -Path './examples/images' -File -Recurse
+
+# The path to the rule file. Update this to the location of your saved file.
+$rulePath = './examples/standalone-rules/FileType.Rule.ps1'
+
+# Or the directory can be used to find all rules in the path:
+# $rulePath = 'C:\temp\'
+
+# Test the rule
+$files | Invoke-PSRule -Path $rulePath
+
+#!markdown
+
+Same example, but using the YAML-based configuration file:
+
+#!pwsh
+
+$files = Get-ChildItem -Path './examples/images' -File -Recurse
+
+# The path to the rule file. Update this to the location of your saved file.
+$rulePath = './examples/standalone-rules/FileType.Rule.yaml'
+
+# Test the rule
+$files | Invoke-PSRule -Path $rulePath -Culture en-us
+
+#!markdown
+
+     If you have too many `Pass` results you can filter the output to only fails by using `-Outcome Fail`.
+     For example:
+
+#!pwsh
+
+$files = Get-ChildItem -Path './examples/images' -File -Recurse
+
+# The path to the rule file. Update this to the location of your saved file.
+$rulePath = './examples/standalone-rules/FileType.Rule.yaml'
+
+# Test the rule
+$files | Invoke-PSRule -Path $rulePath -Culture en-us -Outcome Fail
+
+#!pwsh
+
+$files = Get-ChildItem -Path './examples/images' -File -Recurse
+
+# The path to the rule file. Update this to the location of your saved file.
+$rulePath = './examples/standalone-rules/FileType.Rule.yaml'
+
+# Test the rule
+$files | Assert-PSRule -Path $rulePath -Culture en-us -Outcome Fail
+
+#!markdown
+
+>Note:
+
+>Invoke-PSRule TypeName: PSRule.Rules.RuleRecord
+
+>Assert-PSRule TypeName: No objects, output for human consumption
+
+#!pwsh
+
+$files = Get-ChildItem -Path './examples/images' -File
+
+# Test the rule
+$files | Assert-PSRule -Path './examples/standalone-rules/FileType.Rule.yaml' -Culture en-us -Outcome Fail -Verbose

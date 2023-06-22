@@ -1,0 +1,73 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Installation
+
+Documentation: [https://aka.ms/psrule](https://aka.ms/psrule)
+
+## PowerShell module
+
+PSRule can be installed locally from the PowerShell Gallery using PowerShell.
+You can also use this option to install on CI workers that are not natively supported.
+
+The following platforms are supported:
+
+- Windows PowerShell 5.1 with .NET Framework 4.7.2 or greater.
+- PowerShell 7.2 or greater on MacOS, Linux, and Windows.
+
+
+
+```powershell
+Install-Module -Name 'PSRule' -Repository PSGallery -Scope CurrentUser
+```
+
+#!pwsh
+
+Get-Module -Name PSRule -ListAvailable
+
+#!pwsh
+
+Get-Command -Module PSRule
+
+#!markdown
+
+## VS Code extension
+
+Extension available on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=bewhite.psrule-vscode)
+
+Features:
+
+- CodeLens
+- IntelliSense
+- Quick tasks
+
+```
+code --install-extension bewhite.psrule-vscode
+```
+
+## CI/CD
+
+PSRule provides native integration to popular CI systems such as GitHub Actions and Azure Pipelines. If you are using a different CI system you can use the local install to run on MacOS, Linux, and Windows worker nodes.
+
+### GitHub Actions
+
+```yaml
+- name: Analyze with PSRule
+  uses: microsoft/ps-rule@v2.7.0
+```
+
+### Azure Pipelines
+
+Extension available on [Azure DevOps Marketplace](https://marketplace.visualstudio.com/items?itemName=bewhite.ps-rule)
+
+Usage within Azure Pipelines:
+
+```yaml
+- task: ps-rule-assert@2
+  displayName: Analyze Azure template files
+  inputs:
+    inputType: repository
+```

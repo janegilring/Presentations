@@ -1,0 +1,75 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Frequently Asked Questions (FAQ)
+
+## How is PSRule different to Pester?
+
+PSRule is a framework for testing infrastructure as code (IaC) and objects using rules.
+Rules can be written in PowerShell, YAML, or JSON.
+Some features include:
+
+- **Objects** - PowerShell objects can be validated on the pipeline or imported.
+  - Objects can be [imported][1] directly from `JSON`, `YAML`, or `.psd1`.
+  - Each object is automatically bound to a _target type_ for use with pre-conditions.
+  - Rule results are orientated to validating an object.
+  - Built-in [assertions][2], automatically traverse object properties.
+- **Pre-conditions** - Rules understand which objects they apply to.
+Objects are bound to a type as they are processed using object properties.
+Dissimilar objects can be processed quickly.
+  - Objects that match no rules are flagged with a warning by default.
+- **Packaging** - Rules can be reused between projects and optionally packaged into a module.
+  - Portable rules, configuration, baselines, and documentation allow greater reuse and distribution.
+  - [Documentation][3] with detailed guidance or next steps can be included.
+  - Standalone or rules from modules can be combined together with `-Module` and `-Path`.
+- **Configuration** - [Configuration][4] of rules is handled by PSRule.
+  - Rules can be configured at runtime, from YAML configuration, or environment variables.
+  - [Baselines][5] can be used to pair rules and configuration for a specific scenario.
+- **Exceptions** - Exceptions to a rule can be ignored for a single object using [suppression][6].
+  - Exclusion can be used additionally to ignore a rule entirely.
+
+These features make PSRule ideal for validating:
+
+- Infrastructure as code, including:
+  - Kubernetes manifests.
+  - Azure Resource Manager (ARM) templates.
+  - Configuration files.
+  - Pipeline files.
+- Deployments or configurations against a baseline.
+
+If you want to test PowerShell code, consider using Pester, we do!
+
+
+### Calling from Pester
+
+Pester is a unit test framework for PowerShell that can be installed from the PowerShell Gallery.
+
+Typically, Pester unit tests are built for a particular pipeline.
+PSRule can complement Pester unit tests by providing dynamic and sharable rules that are easy to reuse.
+By using `-If` or `-Type` pre-conditions, rules can dynamically provide validation for a range of use cases.
+
+When calling PSRule from Pester use `Invoke-PSRule` instead of `Assert-PSRule`.
+`Invoke-PSRule` returns validation result objects that can be tested by Pester `Should` conditions.
+
+Additionally, the `Logging.RuleFail` option can be included to generate an error message for each failing rule.
+
+For example:
+
+```powershell
+Describe 'Azure' {
+    Context 'Resource templates' {
+        It 'Use content rules' {
+            $invokeParams = @{
+                Path = './.ps-rule/'
+                OutputFormat = 'NUnit3'
+                OutputPath = 'reports/rule-report.xml'
+            }
+            $items = Get-ChildItem -Recurse -Path .\src\,.\tests\ -Include *.ps1,*.psd1,*.psm1,*.yaml;
+            Invoke-PSRule @invokeParams -Outcome Fail,Error | Should -BeNullOrEmpty;
+        }
+    }
+}
+```

@@ -1,0 +1,164 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Create a Bicep template
+
+We begin with an Azure deployment that uses Bicep templates to create 1 resource group
+with one storage account.
+
+Start by creating a Bicep named [**main.bicep**](./examples/bicep-basic/main.bicep) using [Visual Studio Code](https://code.visualstudio.com/) with
+the [Bicep extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-bicep).
+
+
+
+Tip: Leverage IntelliSense (Ctrl + Space)
+
+
+We got our Bicep code ready and want to start testing - which rules do we need?
+
+Look no further!
+
+## PSRule for Azure
+
+PSRule for Azure is a pre-built set of tests and documentation to help you configure Azure solutions. These tests allow you to check your Infrastructure as Code (IaC) before or after deployment to Azure. PSRule for Azure includes tests that check how IaC is written and how Azure resources are configured.
+
+### Why use PSRule for Azure?
+
+PSRule for Azure helps you identify changes to improve the quality of solutions deployed on Azure.
+PSRule for Azure uses the principles of the Azure Well-Architected Framework (WAF) to:
+
+- **Suggest changes** &mdash; you can use to improve the quality of your solution.
+- **Link to documentation** &mdash; to learn how this applies to your environment.
+- **Demonstrate** &mdash; how you can implement the change with examples.
+
+If you want to write your own tests, you can do that too in your choice of YAML, JSON, or PowerShell.
+However with over 360 tests already built, you can identify and fix issues day one.
+
+
+### Framework aligned
+
+PSRule for Azure is aligned to the Azure Well-Architected Framework (WAF).
+Tests called _rules_ check the configuration of Azure resources against WAF principles.
+Rules exist across five WAF pillars:
+
+- [Cost Optimization](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/#cost-optimization)
+- [Operational Excellence](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/#operational-excellence)
+- [Performance Efficiency](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/#performance-efficiency)
+- [Reliability](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/#reliability)
+- [Security](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/#security)
+
+### Installation
+
+```
+Install-Module -Name 'PSRule.Rules.Azure' -Repository PSGallery -Scope CurrentUser
+```
+
+#!pwsh
+
+Install-Module -Name 'PSRule.Rules.Azure' -Repository PSGallery -Scope CurrentUser -Force
+
+#!pwsh
+
+Get-Module -Name PSRule* -ListAvailable
+
+#!markdown
+
+# Using Bicep source
+
+PSRule for Azure discovers and analyzes Azure resources contained within Bicep files.
+To enable this feature, you need to:
+
+- Enable expansion.
+- For modules (if used):
+  - Define a deployment or parameters file.
+  - Configure path exclusions.
+
+To learn more about why this is important see [Expanding source files](https://azure.github.io/PSRule.Rules.Azure/expanding-source-files/).
+
+## Enabling expansion
+
+To expand Bicep deployments configure `ps-rule.yaml` with the `AZURE_BICEP_FILE_EXPANSION` option.
+
+```yaml title="ps-rule.yaml"
+# YAML: Enable expansion for Bicep source files.
+configuration:
+  AZURE_BICEP_FILE_EXPANSION: true
+```
+
+#!markdown
+
+`Assert-PSRule` supports multiple output formats:
+
+- Csv
+- Json
+- Markdown
+- NUnit 3 - A popular open-source unit testing framework for the .NET platform. It is designed to support test-driven development (TDD) and provides a rich set of features for writing and executing automated unit tests in C#, VB.NET, and other .NET languages.
+- Sarif - The SARIF (Static Analysis Results Interchange Format) is a standardized format for representing the results of static analysis tools. 
+- Yaml
+
+#!markdown
+
+# Community samples for PSRule
+
+#!pwsh
+
+git clone https://github.com/microsoft/PSRule-samples.git /workspaces
+git clone https://github.com/Azure/PSRule.Rules.Azure-quickstart /workspaces
+
+#!pwsh
+
+dir /workspaces/PSRule.Rules.Azure-quickstart
+
+#!pwsh
+
+Set-Location /workspaces/PSRule.Rules.Azure-quickstart
+Get-ChildItem ./bicep/simple-demo -Recurse | Invoke-PSRule
+
+#!pwsh
+
+Set-Location /workspaces/PSRule.Rules.Azure-quickstart
+Get-ChildItem ./bicep/simple-demo -Recurse | Assert-PSRule
+
+#!markdown
+
+> **Note**
+>
+> *[WARN] Target object 'main.bicep' has not been processed because no matching rules were found.*
+>
+> In v2.9.0 set Execution.UnprocessedObject to Ignore. In earlier versions you can set Execution.> NotProcessedWarning to false. See [Options - PSRule](https://microsoft.github.io/PSRule/v2/concepts/PSRule/en-US/about_PSRule_Options/#executionunprocessedobject) for more information.
+
+Configure [ps-rule.yaml](./ps-rule.yaml).
+
+#!markdown
+
+This repository includes:
+
+- **Azure Templates** &mdash; Starter Azure Resource Manager (ARM) templates and parameter files.
+  - Use the files in the `template/` folder if you are using ARM templates to deploy resources.
+- **Azure Bicep** &mdash; Starter Azure Bicep deployments and test files.
+  - Use the files in the `bicep/` folder if you are using Bicep deployments and modules to deploy resources.
+- **GitHub Actions** &mdash; Starter workflow for checking Azure Infrastructure as Code (IaC).
+  - Use the files in the `.github/workflows/` to check your Azure IaC with GitHub Actions.
+  - The `ms-analyze.yaml` file can be ignore or removed as this will not execute outside this repository.
+- **Azure Pipelines** &mdash; Starter pipeline for checking Azure Infrastructure as Code (IaC).
+  - Use the files in the `.pipelines/` to check your Azure IaC with Azure Pipelines.
+- **Custom rules** &mdash; Example custom rules that enforce organization specific requirements.
+  - Use the files in the `.ps-rule/` folder to configure custom rules.
+- **PSRule options** &mdash; Example options for using PSRule for Azure.
+  - PSRule options are configures within `ps-rule.yaml`.
+  - Options include suppressing rules, configuring input/ output, and any rules modules.
+
+#!markdown
+
+## Who uses PSRule for Azure?
+
+Several first-party repositories use PSRule for Azure.
+Here's a few you may be familiar with:
+
+- [Azure/ResourceModules](https://github.com/Azure/ResourceModules) - Common Azure Resource Modules Library
+- [Azure/ALZ-Bicep](https://github.com/Azure/ALZ-Bicep) - Azure Landing Zones (ALZ)
+- [Azure/AKS-Construction](https://github.com/Azure/AKS-Construction) - AKS Construction
+- [Defender for DevOps](https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-devops-introduction) - currently in public preview

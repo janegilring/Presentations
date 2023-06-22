@@ -1,0 +1,69 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+## How do I configure PSRule?
+
+PSRule and rules can be configured by:
+
+- **Parameter** - PSRule can be configured at runtime by passing the `-Option` parameter to cmdlets.
+- **Options file** - Options stored in YAML are load configuration from file.
+The default `ps-rule.yaml` option file is read automatically from the current working path by default.
+When checking into source control, store this file in the root directory of the repository.
+- **Environment variables** - Configuration can be specified using environment variables.
+
+#!pwsh
+
+# With cmdlet
+$option = New-PSRuleOption -OutputAs Summary -OutputCulture 'en-US' -NotProcessedWarning $false -Configuration @{
+  CUSTOM_VALUE = 'example'
+}
+
+$files = Get-ChildItem -Path './examples/images' -File
+
+# The path to the rule file. Update this to the location of your saved file.
+$rulePath = './examples/standalone-rules/FileType.Rule.ps1'
+
+# Test the rule
+$files | Assert-PSRule -Option $option -Path $rulePath
+
+#!markdown
+
+```powershell
+# With hashtable
+$items | Assert-PSRule -Option @{
+  'Output.As' = 'Summary'
+  'Output.Culture' = 'en-US'
+  'Execution.NotProcessedWarning' = $False
+  'Configuration.CUSTOM_VALUE' = 'Example'
+}
+```
+
+```yaml
+# With YAML
+output:
+  as: Summary
+  culture: [ 'en-US' ]
+execution:
+  notProcessedWarning: false
+configuration:
+  CUSTOM_VALUE: Example
+```
+
+```bash
+# With environment variable in bash
+export PSRULE_EXECUTION_NOTPROCESSEDWARNING=false
+export PSRULE_OUTPUT_AS=Summary
+export PSRULE_OUTPUT_CULTURE=en-US
+export PSRULE_CONFIGURATION_CUSTOM_VALUE=Example
+```
+
+#!markdown
+
+## What pre-built modules are available for PSRule?
+
+#!pwsh
+
+Find-Module -Tag PSRule-rules | Format-Table Name,Description -AutoSize
