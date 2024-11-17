@@ -105,12 +105,12 @@ configuration:
 
 #!pwsh
 
-git clone https://github.com/microsoft/PSRule-samples.git /workspaces
-git clone https://github.com/Azure/PSRule.Rules.Azure-quickstart /workspaces
+git clone https://github.com/microsoft/PSRule-samples.git /tmp/PSRule-samples
+git clone https://github.com/Azure/PSRule.Rules.Azure-quickstart /tmp/PSRule.Rules.Azure-quickstart
 
 #!pwsh
 
-dir /workspaces/PSRule.Rules.Azure-quickstart
+dir /tmp/PSRule.Rules.Azure-quickstart
 
 #!pwsh
 
@@ -119,8 +119,8 @@ Get-ChildItem ./bicep/simple-demo -Recurse | Invoke-PSRule
 
 #!pwsh
 
-Set-Location /workspaces/PSRule.Rules.Azure-quickstart
-Get-ChildItem ./bicep/simple-demo -Recurse | Assert-PSRule
+Set-Location /tmp/PSRule.Rules.Azure-quickstart
+Get-ChildItem C:\temp\PSRule.Rules.Azure-quickstart\deployments\contoso\landing-zones\subscription-1\rg-app-001 -Recurse | Assert-PSRule
 
 #!markdown
 

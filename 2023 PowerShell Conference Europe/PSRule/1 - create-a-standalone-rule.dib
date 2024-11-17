@@ -41,6 +41,7 @@ You only need to choose one format, however you can choose to create all three t
 
 #!pwsh
 
+$PSVersionTable.PSVersion
 $files = Get-ChildItem -Path './examples/images' -File -Recurse
 
 # The path to the rule file. Update this to the location of your saved file.
